@@ -75,7 +75,6 @@ export const Header = () => {
           onChange={handleImportJSON} 
         />
         <button className="download-btn" onClick={handleDownload}>Report</button>
-        <button className="clear-all-btn" onClick={handleClear}>Clear</button>
       </div>
     </div>
   );
