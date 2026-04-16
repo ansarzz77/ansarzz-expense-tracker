@@ -3,15 +3,8 @@ import { GlobalContext } from '../context/GlobalState';
 import { downloadCSV } from '../utils/reportGenerator';
 
 export const Header = () => {
-  const { clearTransactions, transactions, plans, importData } = useContext(GlobalContext);
+  const { transactions, plans, importData } = useContext(GlobalContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleClear = () => {
-    if (transactions.length === 0 && plans.length === 0) return;
-    if (window.confirm('Are you sure you want to clear all transactions? This cannot be undone.')) {
-      clearTransactions();
-    }
-  };
 
   const handleDownload = () => {
     if (transactions.length === 0) return;
