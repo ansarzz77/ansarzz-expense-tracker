@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { GlobalContext } from '../context/GlobalState';
 import { TransactionItem } from './TransactionItem';
 
@@ -9,6 +9,18 @@ const MONTH_NAMES = [
 
 export const FutureProjections = () => {
   const { transactions } = useContext(GlobalContext);
+  const [collapsedMonths, setCollapsedMonths] = useState<Record<number, boolean>>({
+    0: true, // Index 0 (Month +1)
+    1: true, // Index 1 (Month +2)
+    2: true  // Index 2 (Month +3)
+  });
+
+  const toggleMonth = (index: number) => {
+    setCollapsedMonths(prev => ({
+      ...prev,
+      [index]: !prev[index]
+    }));
+  };
 
   const getMonthData = (monthsAhead: number) => {
     const now = new Date();
@@ -58,7 +70,17 @@ export const FutureProjections = () => {
     <div className="future-projections">
       {projections.map((data, index) => (
         <div key={index} className="upcoming-section" style={{ marginTop: '30px' }}>
-          <h3>Expected for {data.monthName}</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+            <h3 style={{ margin: 0, border: 0, padding: 0 }}>Expected for {data.monthName}</h3>
+            <button 
+              className="icon-btn" 
+              onClick={() => toggleMonth(index)}
+              style={{ fontSize: '0.8rem', padding: '2px 10px' }}
+            >
+              {collapsedMonths[index] ? 'Show Details ▼' : 'Hide Details ▲'}
+            </button>
+          </div>
+
           <div className="projected-summary" style={{ background: index === 0 ? '#eef2f7' : index === 1 ? '#f1f5f9' : '#f8fafc' }}>
             <div className="proj-item">
               <span>Proj. Income</span>
@@ -75,15 +97,19 @@ export const FutureProjections = () => {
               </span>
             </div>
           </div>
-          <ul className="list">
-            {data.pendingOnly.length === 0 ? (
-              <p className="empty-msg">No entries for {data.monthName} yet.</p>
-            ) : (
-              data.pendingOnly.map(transaction => (
-                <TransactionItem key={transaction.id} transaction={transaction} />
-              ))
-            )}
-          </ul>
+
+          {!collapsedMonths[index] && (
+            <ul className="list">
+              {data.pendingOnly.length === 0 ? (
+                <p className="empty-msg">No entries for {data.monthName} yet.</p>
+              ) : (
+                data.pendingOnly.map(transaction => (
+                  <TransactionItem key={transaction.id} transaction={transaction} />
+                ))
+              )}
+            </ul>
+          )}
+          <div style={{ borderBottom: '1px solid #e1e8ed', margin: '20px 0' }}></div>
         </div>
       ))}
     </div>
