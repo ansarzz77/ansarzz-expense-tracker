@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --primary-color: #4da674;
+  --primary-dark: #3e8e60;
+  --secondary-color: #88c9a1;
+  --bg-color: #f0f7f2;
+  --card-bg: #ffffff;
+  --text-primary: #2d3e33;
+  --text-secondary: #6b8c78;
+  --income-color: #4da674;
+  --expense-color: #e67e73;
+  --font-family: 'Quicksand', sans-serif;
+  --border-radius: 16px;
+  --shadow-sm: 0 4px 6px rgba(77, 166, 116, 0.05);
+  --shadow-md: 0 8px 16px rgba(77, 166, 116, 0.1);
+  --shadow-lg: 0 16px 24px rgba(77, 166, 116, 0.15);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+}
+
+#root {
+  width: 100%;
+  max-width: 450px;
+}
+
+h1, h2, h3, h4 {
+  margin-bottom: 0.5rem;
+}
+
+ul {
+  list-style-type: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: var(--border-radius);
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+input, select {
+  width: 100%;
+  padding: 0.8rem;
+  margin: 0.5rem 0;
+  border: 1px solid #e1e8ed;
+  border-radius: var(--border-radius);
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
