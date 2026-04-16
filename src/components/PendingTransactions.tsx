@@ -1,4 +1,4 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { GlobalContext } from '../context/GlobalState';
 import { TransactionItem } from './TransactionItem';
 
@@ -9,6 +9,7 @@ const MONTH_NAMES = [
 
 export const PendingTransactions = () => {
   const { transactions } = useContext(GlobalContext);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -45,7 +46,17 @@ export const PendingTransactions = () => {
 
   return (
     <div className="pending-section">
-      <h3>Dues for {monthName}</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <h3 style={{ margin: 0, border: 0, padding: 0 }}>Dues for {monthName}</h3>
+        <button 
+          className="icon-btn" 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          style={{ fontSize: '0.8rem', padding: '2px 10px' }}
+        >
+          {isCollapsed ? 'Show Dues ▼' : 'Hide Dues ▲'}
+        </button>
+      </div>
+
       <div className="projected-summary">
         <div className="proj-item">
           <span>Proj. Income</span>
@@ -62,15 +73,19 @@ export const PendingTransactions = () => {
           </span>
         </div>
       </div>
-      <ul className="list">
-        {pendingTransactions.length === 0 ? (
-          <p className="empty-msg">No pending items for this month.</p>
-        ) : (
-          pendingTransactions.map(transaction => (
-            <TransactionItem key={transaction.id} transaction={transaction} />
-          ))
-        )}
-      </ul>
+
+      {!isCollapsed && (
+        <ul className="list">
+          {pendingTransactions.length === 0 ? (
+            <p className="empty-msg">No pending items for this month.</p>
+          ) : (
+            pendingTransactions.map(transaction => (
+              <TransactionItem key={transaction.id} transaction={transaction} />
+            ))
+          )}
+        </ul>
+      )}
+      <div style={{ borderBottom: '1px solid #e1e8ed', margin: '20px 0' }}></div>
     </div>
   );
 };
