@@ -3,7 +3,7 @@ import { GlobalContext } from '../context/GlobalState';
 
 export const AddTransaction = () => {
   const [text, setText] = useState('');
-  const [amount, setAmount] = useState<number>(0);
+  const [amount, setAmount] = useState<string>('0');
   const [category, setCategory] = useState('General');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
@@ -15,12 +15,14 @@ export const AddTransaction = () => {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
+    const numericAmount = parseFloat(amount);
+
     if (!text.trim()) {
       alert('Please add a description');
       return;
     }
 
-    if (amount <= 0) {
+    if (isNaN(numericAmount) || numericAmount <= 0) {
       alert('Please enter a valid amount greater than 0');
       return;
     }
@@ -28,7 +30,7 @@ export const AddTransaction = () => {
     addRecurringPlan({
       id: Math.floor(Math.random() * 100000000),
       text,
-      amount: +amount,
+      amount: numericAmount,
       category,
       type,
       frequency,
@@ -37,7 +39,7 @@ export const AddTransaction = () => {
     });
 
     setText('');
-    setAmount(0);
+    setAmount('0');
     setNote('');
   };
 
@@ -51,7 +53,15 @@ export const AddTransaction = () => {
         </div>
         <div className="form-control">
           <label htmlFor="amount">Amount (₹)</label>
-          <input type="number" step="0.01" value={amount} onChange={(e) => setAmount(+e.target.value)} placeholder="0.00" required />
+          <input 
+            type="number" 
+            step="0.01" 
+            value={amount} 
+            onChange={(e) => setAmount(e.target.value)} 
+            placeholder="0.00" 
+            required 
+            onFocus={(e) => e.target.value === '0' && setAmount('')}
+          />
         </div>
         <div className="form-control">
           <label htmlFor="type">Type</label>

@@ -6,7 +6,7 @@ export const ActivePlans = () => {
   const { plans, deletePlan, updatePlan } = useContext(GlobalContext);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [editText, setEditText] = useState('');
-  const [editAmount, setEditAmount] = useState(0);
+  const [editAmount, setEditAmount] = useState<string>('0');
   const [editCategory, setEditCategory] = useState('General');
   const [editType, setEditType] = useState<'income' | 'expense'>('expense');
   const [editNote, setEditNote] = useState('');
@@ -15,7 +15,7 @@ export const ActivePlans = () => {
   const startEdit = (plan: RecurringPlan) => {
     setEditingId(plan.id);
     setEditText(plan.text);
-    setEditAmount(plan.amount);
+    setEditAmount(plan.amount.toString());
     setEditCategory(plan.category);
     setEditType(plan.type);
     setEditNote(plan.note || '');
@@ -25,11 +25,13 @@ export const ActivePlans = () => {
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
     const plan = plans.find(p => p.id === editingId);
-    if (plan) {
+    const numericAmount = parseFloat(editAmount);
+
+    if (plan && !isNaN(numericAmount)) {
       updatePlan({
         ...plan,
         text: editText,
-        amount: editAmount,
+        amount: numericAmount,
         category: editCategory,
         type: editType,
         note: editNote,
@@ -51,7 +53,14 @@ export const ActivePlans = () => {
               {editingId === plan.id ? (
                 <form onSubmit={handleUpdate} className="edit-form">
                   <input type="text" value={editText} onChange={(e) => setEditText(e.target.value)} required />
-                  <input type="number" step="0.01" value={editAmount} onChange={(e) => setEditAmount(+e.target.value)} required />
+                  <input 
+                    type="number" 
+                    step="0.01" 
+                    value={editAmount} 
+                    onChange={(e) => setEditAmount(e.target.value)} 
+                    required 
+                    onFocus={(e) => e.target.value === '0' && setEditAmount('')}
+                  />
                   <select value={editType} onChange={(e) => setEditType(e.target.value as 'income' | 'expense')}>
                     <option value="expense">Expense</option>
                     <option value="income">Income</option>
