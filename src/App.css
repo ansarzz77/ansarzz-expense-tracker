@@ -442,8 +442,55 @@ h3 {
   100% { transform: rotate(360deg); }
 }
 
-/* Media Queries */
+.add-transaction-card {
+  background: var(--card-bg);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  border-top: 4px solid var(--primary-color);
+  margin-top: 2rem;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.form-row .form-control {
+  flex: 1;
+  margin: 0;
+}
+
+.flex-2 {
+  flex: 2 !important;
+}
+
+.flex-1 {
+  flex: 1 !important;
+}
+
+.form-control input, .form-control select, .form-control textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #e1e8ed;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  background-color: #fcfdfe;
+}
+
+.form-control input:focus, .form-control select:focus, .form-control textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  background-color: #fff;
+}
+
+/* Media Queries update */
 @media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
   .container {
     width: 95%;
     padding: 10px;

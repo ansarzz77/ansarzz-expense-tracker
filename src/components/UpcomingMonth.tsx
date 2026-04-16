@@ -1,9 +1,10 @@
-import { useContext } from 'react';
+import { useContext, useState } from 'react';
 import { GlobalContext } from '../context/GlobalState';
 import { TransactionItem } from './TransactionItem';
 
 export const UpcomingMonth = () => {
   const { transactions } = useContext(GlobalContext);
+  const [isCollapsed, setIsCollapsed] = useState(true);
 
   const now = new Date();
   const nextMonth = (now.getMonth() + 1) % 12;
@@ -38,7 +39,17 @@ export const UpcomingMonth = () => {
 
   return (
     <div className="upcoming-section">
-      <h3>Expected for {monthName}</h3>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <h3 style={{ margin: 0, border: 0, padding: 0 }}>Expected for {monthName}</h3>
+        <button 
+          className="icon-btn" 
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          style={{ fontSize: '0.8rem', padding: '2px 10px' }}
+        >
+          {isCollapsed ? 'Show Details ▼' : 'Hide Details ▲'}
+        </button>
+      </div>
+      
       <div className="projected-summary" style={{ background: '#eef2f7' }}>
         <div className="proj-item">
           <span>Exp. Income</span>
@@ -55,15 +66,19 @@ export const UpcomingMonth = () => {
           </span>
         </div>
       </div>
-      <ul className="list">
-        {upcomingMonthTransactions.length === 0 ? (
-          <p className="empty-msg">No entries for {monthName} yet.</p>
-        ) : (
-          upcomingMonthTransactions.map(transaction => (
-            <TransactionItem key={transaction.id} transaction={transaction} />
-          ))
-        )}
-      </ul>
+
+      {!isCollapsed && (
+        <ul className="list">
+          {upcomingMonthTransactions.length === 0 ? (
+            <p className="empty-msg">No entries for {monthName} yet.</p>
+          ) : (
+            upcomingMonthTransactions.map(transaction => (
+              <TransactionItem key={transaction.id} transaction={transaction} />
+            ))
+          )}
+        </ul>
+      )}
+      <div style={{ borderBottom: '1px solid #e1e8ed', margin: '20px 0' }}></div>
     </div>
   );
 };
