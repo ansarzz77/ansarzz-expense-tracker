@@ -3,7 +3,7 @@ import { GlobalContext } from '../context/GlobalContext';
 import { downloadCSV } from '../utils/reportGenerator';
 
 export const Header = () => {
-  const { transactions, plans, importData } = useContext(GlobalContext);
+  const { transactions, plans, theme, toggleTheme, importData } = useContext(GlobalContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDownload = () => {
@@ -58,6 +58,9 @@ export const Header = () => {
         </div>
       </div>
       <div className="header-actions">
+        <button className="icon-btn" onClick={toggleTheme} title="Toggle Theme">
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
         <button className="icon-btn" onClick={handleExportJSON} title="Backup Data">📤</button>
         <button className="icon-btn" onClick={() => fileInputRef.current?.click()} title="Restore Data">📥</button>
         <input 

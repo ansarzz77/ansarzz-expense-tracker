@@ -62,7 +62,7 @@
 }
 
 .icon-btn {
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--interactive-bg);
   backdrop-filter: blur(4px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   font-size: 1.1rem;
@@ -258,7 +258,7 @@ h3 {
 .transaction-category {
   font-size: 0.7rem;
   color: var(--text-secondary);
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--interactive-bg);
   padding: 2px 10px;
   border-radius: 20px;
   width: fit-content;
@@ -335,9 +335,9 @@ h3 {
 }
 
 .edit-btn-icon {
-  background: rgba(255, 255, 255, 0.4);
+  background: var(--interactive-bg);
   border: 0;
-  color: #495057;
+  color: var(--text-primary);
   font-size: 0.8rem;
   padding: 4px 10px;
   border-radius: 8px;
@@ -418,7 +418,7 @@ h3 {
 }
 
 .delete-btn {
-  background-color: rgba(255, 255, 255, 0.3);
+  background-color: var(--interactive-bg);
   border: 0;
   color: #adb5bd;
   font-size: 1.1rem;

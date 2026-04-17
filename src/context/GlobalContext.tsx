@@ -11,17 +11,21 @@ export interface GlobalContextProps extends State {
   settleTransaction: (id: number, paidDate: string) => void;
   deletePlan: (id: number) => void;
   updatePlan: (plan: RecurringPlan, updateInstances: boolean) => void;
+  toggleTheme: () => void;
   importData: (data: State) => void;
 }
 
 const initialState: State = {
   transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
   plans: JSON.parse(localStorage.getItem('plans') || '[]'),
+  theme: (localStorage.getItem('theme') as 'light' | 'dark') || 
+         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
 };
 
 export const GlobalContext = createContext<GlobalContextProps>({
   transactions: initialState.transactions,
   plans: initialState.plans,
+  theme: initialState.theme,
   loading: true,
   deleteTransaction: () => {},
   addTransaction: () => {},
@@ -31,5 +35,6 @@ export const GlobalContext = createContext<GlobalContextProps>({
   settleTransaction: () => {},
   deletePlan: () => {},
   updatePlan: () => {},
+  toggleTheme: () => {},
   importData: () => {},
 });

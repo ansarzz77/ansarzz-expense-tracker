@@ -40,7 +40,11 @@ const itemVariants: Variants = {
 };
 
 const AppContent = () => {
-  const { loading, transactions } = useContext(GlobalContext);
+  const { loading, transactions, theme } = useContext(GlobalContext);
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   useEffect(() => {
     if (loading) return;

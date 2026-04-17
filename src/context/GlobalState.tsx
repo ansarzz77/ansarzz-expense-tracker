@@ -7,6 +7,8 @@ import { GlobalContext } from './GlobalContext';
 const initialState: State = {
   transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
   plans: JSON.parse(localStorage.getItem('plans') || '[]'),
+  theme: (localStorage.getItem('theme') as 'light' | 'dark') || 
+         (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
 };
 
 // Provider component
@@ -46,6 +48,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     localStorage.setItem('transactions', JSON.stringify(state.transactions));
     localStorage.setItem('plans', JSON.stringify(state.plans));
+    localStorage.setItem('theme', state.theme);
 
     const syncToCloud = async () => {
       if (!supabase) return;
@@ -54,16 +57,23 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         .from('user_data')
         .upsert({ 
           id: 'global_state', 
-          payload: { transactions: state.transactions, plans: state.plans },
+          payload: { 
+            transactions: state.transactions, 
+            plans: state.plans,
+            theme: state.theme
+          },
           updated_at: new Date()
         });
     };
 
     const timeoutId = setTimeout(syncToCloud, 2000); // Debounce sync by 2 seconds
     return () => clearTimeout(timeoutId);
-  }, [state.transactions, state.plans]);
+  }, [state.transactions, state.plans, state.theme]);
 
   // Actions
+  function toggleTheme() {
+    dispatch({ type: 'TOGGLE_THEME' });
+  }
   function deleteTransaction(id: number) {
     dispatch({ type: 'DELETE_TRANSACTION', payload: id });
   }
@@ -169,6 +179,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
       value={{
         transactions: state.transactions,
         plans: state.plans,
+        theme: state.theme,
         loading,
         deleteTransaction,
         addTransaction,
@@ -178,6 +189,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         settleTransaction,
         deletePlan,
         updatePlan,
+        toggleTheme,
         importData,
       }}
     >

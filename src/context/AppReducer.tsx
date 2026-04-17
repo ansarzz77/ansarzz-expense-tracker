@@ -31,11 +31,13 @@ export type Action =
   | { type: 'SETTLE_TRANSACTION'; payload: { id: number; paidDate: string } }
   | { type: 'DELETE_PLAN'; payload: number }
   | { type: 'UPDATE_PLAN'; payload: { plan: RecurringPlan; updateInstances: boolean } }
+  | { type: 'TOGGLE_THEME' }
   | { type: 'IMPORT_DATA'; payload: State };
 
 export interface State {
   transactions: Transaction[];
   plans: RecurringPlan[];
+  theme: 'light' | 'dark';
 }
 
 const AppReducer = (state: State, action: Action): State => {
@@ -45,6 +47,12 @@ const AppReducer = (state: State, action: Action): State => {
         ...state,
         transactions: action.payload.transactions || [],
         plans: action.payload.plans || [],
+        theme: action.payload.theme || state.theme,
+      };
+    case 'TOGGLE_THEME':
+      return {
+        ...state,
+        theme: state.theme === 'light' ? 'dark' : 'light',
       };
     case 'DELETE_TRANSACTION':
       return {

@@ -12,6 +12,7 @@
   --glass-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.05) 100%);
   --text-primary: #1a2e21;
   --text-secondary: #5a7c68;
+  --interactive-bg: rgba(255, 255, 255, 0.4);
   --income-color: #4da674;
   --expense-color: #e67e73;
   --font-family: 'Quicksand', sans-serif;
@@ -43,6 +44,48 @@
   --glass-border: rgba(255, 255, 255, 0.5);
   --text-primary: #440417;
   --text-secondary: #8b1233;
+}
+
+/* Dark Mode Overrides */
+[data-theme="dark"] {
+  --bg-color: #0a0a0a;
+  --bg-gradient: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0a0a0a 100%);
+  --card-bg: rgba(30, 30, 30, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-gradient: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  --text-primary: #f1f3f5;
+  --text-secondary: #a0b1a8;
+  --interactive-bg: rgba(255, 255, 255, 0.1);
+  --shadow-md: 0 8px 32px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"][data-mood="warning"] {
+  --bg-gradient: linear-gradient(135deg, #1c1917 0%, #292524 50%, #1c1917 100%);
+  --card-bg: rgba(41, 37, 36, 0.45);
+  --text-primary: #fef3c7;
+  --text-secondary: #fcd34d;
+}
+
+[data-theme="dark"][data-mood="overspent"] {
+  --bg-gradient: linear-gradient(135deg, #1c0a0a 0%, #2a1212 50%, #1c0a0a 100%);
+  --card-bg: rgba(42, 18, 18, 0.45);
+  --text-primary: #ffe4e6;
+  --text-secondary: #fb7185;
+}
+
+[data-theme="dark"] .blob-1 {
+  background: #1b4332;
+  opacity: 0.4;
+}
+
+[data-theme="dark"] .blob-2 {
+  background: #0a0a0a;
+  opacity: 0.3;
+}
+
+[data-theme="dark"] .blob-3 {
+  background: #081c15;
+  opacity: 0.4;
 }
 
 * {
