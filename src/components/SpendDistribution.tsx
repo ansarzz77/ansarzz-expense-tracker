@@ -3,8 +3,8 @@ import { GlobalContext } from '../context/GlobalContext';
 import type { Transaction } from '../context/AppReducer';
 
 const COLORS = [
-  '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
-  '#FF9F40', '#8AC926', '#1982C4', '#6A4C93', '#F15BB5'
+  '#4da674', '#88c9a1', '#2d6a4f', '#74c69d', '#b7e4c7', 
+  '#52b788', '#40916c', '#1b4332', '#95d5b2', '#d8f3dc'
 ];
 
 interface CategorySummary {
