@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
 import { GlobalContext } from '../context/GlobalContext';
 import type { RecurringPlan } from '../context/AppReducer';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export const ActivePlans = () => {
   const { plans, deletePlan, updatePlan } = useContext(GlobalContext);
@@ -57,61 +58,70 @@ export const ActivePlans = () => {
 
       {!isCollapsed && (
         <ul className="list">
-          {plans.length === 0 ? (
-            <p className="empty-msg">No active plans yet.</p>
-          ) : (
-            plans.map(plan => (
-              <li key={plan.id} className={plan.type === 'income' ? 'plus' : 'minus'} style={{ display: 'block' }}>
-                {editingId === plan.id ? (
-                  <form onSubmit={handleUpdate} className="edit-form">
-                    <input type="text" value={editText} onChange={(e) => setEditText(e.target.value)} required />
-                    <input 
-                      type="number" 
-                      step="0.01" 
-                      value={editAmount} 
-                      onChange={(e) => setEditAmount(e.target.value)} 
-                      required 
-                      onFocus={(e) => e.target.value === '0' && setEditAmount('')}
-                    />
-                    <select value={editType} onChange={(e) => setEditType(e.target.value as 'income' | 'expense')}>
-                      <option value="expense">Expense</option>
-                      <option value="income">Income</option>
-                    </select>
-                    <select value={editFrequency} onChange={(e) => setEditFrequency(e.target.value as 'one-time' | 'monthly' | 'quarterly' | 'half-yearly' | 'yearly')}>
-                      <option value="one-time">One-time (Stop future)</option>
-                      <option value="monthly">Monthly</option>
-                      <option value="quarterly">Quarterly</option>
-                      <option value="half-yearly">Half-yearly</option>
-                      <option value="yearly">Yearly</option>
-                    </select>
-                    <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)}>
-                      <option value="General">General</option>
-                      <option value="Food">Food</option>
-                      <option value="Rent">Rent</option>
-                      <option value="Salary">Salary</option>
-                      <option value="Entertainment">Entertainment</option>
-                      <option value="Transportation">Transportation</option>
-                      <option value="Shopping">Shopping</option>
-                      <option value="Loan Instalment">Loan Instalment</option>
-                      <option value="Society Maintenance">Society Maintenance</option>
-                      <option value="Property Tax">Property Tax</option>
-                      <option value="Utility-Self">Utility-Self</option>
-                      <option value="Utility-Parents">Utility-Parents</option>
-                      <option value="Car Expense">Car Expense</option>
-                      <option value="Mom Dad to Spent">Mom Dad to Spent</option>
-                      <option value="Spouse Contribution">Spouse Contribution</option>
-                      <option value="Kids Madrassa">Kids Madrassa</option>
-                      <option value="Investment">Investment</option>
-                      <option value="Credit Card">Credit Card</option>
-                    </select>
-                    <textarea value={editNote} onChange={(e) => setEditNote(e.target.value)} placeholder="Note" style={{ width: '100%', marginTop: '5px' }} />
-                    <div className="edit-buttons">
-                      <button type="submit" className="save-btn">Save</button>
-                      <button type="button" onClick={() => setEditingId(null)} className="cancel-btn">Cancel</button>
-                    </div>
-                  </form>
-                ) : (
-                  <>
+          <AnimatePresence mode="popLayout">
+            {plans.length === 0 ? (
+              <p className="empty-msg">No active plans yet.</p>
+            ) : (
+              plans.map(plan => (
+                <motion.li 
+                  key={plan.id} 
+                  layout
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  className={plan.type === 'income' ? 'plus' : 'minus'} 
+                  style={{ display: 'block' }}
+                >
+                  {editingId === plan.id ? (
+                    <form onSubmit={handleUpdate} className="edit-form">
+                      <input type="text" value={editText} onChange={(e) => setEditText(e.target.value)} required />
+                      <input 
+                        type="number" 
+                        step="0.01" 
+                        value={editAmount} 
+                        onChange={(e) => setEditAmount(e.target.value)} 
+                        required 
+                        onFocus={(e) => e.target.value === '0' && setEditAmount('')}
+                      />
+                      <select value={editType} onChange={(e) => setEditType(e.target.value as 'income' | 'expense')}>
+                        <option value="expense">Expense</option>
+                        <option value="income">Income</option>
+                      </select>
+                      <select value={editFrequency} onChange={(e) => setEditFrequency(e.target.value as 'one-time' | 'monthly' | 'quarterly' | 'half-yearly' | 'yearly')}>
+                        <option value="one-time">One-time (Stop future)</option>
+                        <option value="monthly">Monthly</option>
+                        <option value="quarterly">Quarterly</option>
+                        <option value="half-yearly">Half-yearly</option>
+                        <option value="yearly">Yearly</option>
+                      </select>
+                      <select value={editCategory} onChange={(e) => setEditCategory(e.target.value)}>
+                        <option value="General">General</option>
+                        <option value="Food">Food</option>
+                        <option value="Rent">Rent</option>
+                        <option value="Salary">Salary</option>
+                        <option value="Entertainment">Entertainment</option>
+                        <option value="Transportation">Transportation</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="Loan Instalment">Loan Instalment</option>
+                        <option value="Society Maintenance">Society Maintenance</option>
+                        <option value="Property Tax">Property Tax</option>
+                        <option value="Utility-Self">Utility-Self</option>
+                        <option value="Utility-Parents">Utility-Parents</option>
+                        <option value="Car Expense">Car Expense</option>
+                        <option value="Mom Dad to Spent">Mom Dad to Spent</option>
+                        <option value="Spouse Contribution">Spouse Contribution</option>
+                        <option value="Kids Madrassa">Kids Madrassa</option>
+                        <option value="Investment">Investment</option>
+                        <option value="Credit Card">Credit Card</option>
+                      </select>
+                      <textarea value={editNote} onChange={(e) => setEditNote(e.target.value)} placeholder="Note" style={{ width: '100%', marginTop: '5px' }} />
+                      <div className="edit-buttons">
+                        <button type="submit" className="save-btn">Save</button>
+                        <button type="button" onClick={() => setEditingId(null)} className="cancel-btn">Cancel</button>
+                      </div>
+                    </form>
+                  ) : (
                     <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
                       <div className="transaction-info">
                         <span className="transaction-text">{plan.text}</span>
@@ -133,11 +143,11 @@ export const ActivePlans = () => {
                         </div>
                       </div>
                     </div>
-                  </>
-                )}
-              </li>
-            ))
-          )}
+                  )}
+                </motion.li>
+              ))
+            )}
+          </AnimatePresence>
         </ul>
       )}
       <div style={{ borderBottom: '1px solid #e1e8ed', margin: '20px 0' }}></div>

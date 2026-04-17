@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
 import { GlobalContext } from '../context/GlobalContext';
 import type { Transaction } from '../context/AppReducer';
+import { motion } from 'framer-motion';
 
 export const TransactionItem = ({ transaction }: { transaction: Transaction }) => {
   const { deleteTransaction, updateTransaction, settleTransaction, addRecurringPlan } = useContext(GlobalContext);
@@ -52,7 +53,16 @@ export const TransactionItem = ({ transaction }: { transaction: Transaction }) =
 
   if (isEditing) {
     return (
-      <li className={editType === 'income' ? 'plus editing' : 'minus editing'} style={{ display: 'block' }}>
+      <motion.li 
+        layout
+        layoutId={String(transaction.id)}
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ type: "spring", stiffness: 300, damping: 25 }}
+        className={editType === 'income' ? 'plus editing' : 'minus editing'} 
+        style={{ display: 'block' }}
+      >
         <form onSubmit={handleUpdate} className="edit-form">
           <input type="text" value={editText} onChange={(e) => setEditText(e.target.value)} required />
           <input type="number" step="0.01" value={editAmount} onChange={(e) => setEditAmount(+e.target.value)} required />
@@ -91,12 +101,20 @@ export const TransactionItem = ({ transaction }: { transaction: Transaction }) =
             <button type="button" onClick={() => setIsEditing(false)} className="cancel-btn">Cancel</button>
           </div>
         </form>
-      </li>
+      </motion.li>
     );
   }
 
   return (
-    <li className={transaction.type === 'income' ? 'plus' : 'minus'}>
+    <motion.li 
+      layout
+      layoutId={String(transaction.id)}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      transition={{ type: "spring", stiffness: 300, damping: 25 }}
+      className={transaction.type === 'income' ? 'plus' : 'minus'}
+    >
       <div className="transaction-info">
         <span className="transaction-text">{transaction.text}</span>
         <div className="transaction-meta">
@@ -126,6 +144,6 @@ export const TransactionItem = ({ transaction }: { transaction: Transaction }) =
           <button onClick={() => deleteTransaction(transaction.id)} className="delete-btn">x</button>
         </div>
       </div>
-    </li>
+    </motion.li>
   );
 };

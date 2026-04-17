@@ -2,6 +2,7 @@ import { useContext, useState } from 'react';
 import { GlobalContext } from '../context/GlobalContext';
 import { TransactionItem } from './TransactionItem';
 import type { Transaction } from '../context/AppReducer';
+import { AnimatePresence } from 'framer-motion';
 
 export const TransactionList = () => {
   const { transactions } = useContext(GlobalContext);
@@ -24,13 +25,15 @@ export const TransactionList = () => {
 
       {!isCollapsed && (
         <ul className="list">
-          {completedTransactions.length === 0 ? (
-            <p className="empty-msg">No completed transactions yet.</p>
-          ) : (
-            completedTransactions.map(transaction => (
-              <TransactionItem key={transaction.id} transaction={transaction} />
-            ))
-          )}
+          <AnimatePresence mode="popLayout">
+            {completedTransactions.length === 0 ? (
+              <p className="empty-msg">No completed transactions yet.</p>
+            ) : (
+              completedTransactions.map(transaction => (
+                <TransactionItem key={transaction.id} transaction={transaction} />
+              ))
+            )}
+          </AnimatePresence>
         </ul>
       )}
       <div style={{ borderBottom: '1px solid #e1e8ed', margin: '20px 0' }}></div>

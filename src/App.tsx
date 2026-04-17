@@ -12,8 +12,32 @@ import { GlobalProvider } from './context/GlobalState';
 import { GlobalContext } from './context/GlobalContext';
 import { useContext, useEffect } from 'react';
 import type { Transaction } from './context/AppReducer';
+import { motion, type Variants } from 'framer-motion';
 
 import './App.css';
+
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
+
+const itemVariants: Variants = {
+  hidden: { y: 20, opacity: 0 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    transition: {
+      type: "spring",
+      stiffness: 300,
+      damping: 24
+    }
+  }
+};
 
 const AppContent = () => {
   const { loading, transactions } = useContext(GlobalContext);
@@ -67,16 +91,21 @@ const AppContent = () => {
   return (
     <>
       <Header />
-      <div className="container">
-        <Balance />
-        <IncomeExpenses />
-        <SpendDistribution />
-        <PendingTransactions />
-        <FutureProjections />
-        <ActivePlans />
-        <TransactionList />
-        <AddTransaction />
-      </div>
+      <motion.div 
+        className="container"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div variants={itemVariants}><Balance /></motion.div>
+        <motion.div variants={itemVariants}><IncomeExpenses /></motion.div>
+        <motion.div variants={itemVariants}><SpendDistribution /></motion.div>
+        <motion.div variants={itemVariants}><PendingTransactions /></motion.div>
+        <motion.div variants={itemVariants}><FutureProjections /></motion.div>
+        <motion.div variants={itemVariants}><ActivePlans /></motion.div>
+        <motion.div variants={itemVariants}><TransactionList /></motion.div>
+        <motion.div variants={itemVariants}><AddTransaction /></motion.div>
+      </motion.div>
     </>
   );
 }

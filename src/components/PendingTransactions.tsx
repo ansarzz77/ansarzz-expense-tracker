@@ -2,6 +2,7 @@ import { useContext, useState } from 'react';
 import { GlobalContext } from '../context/GlobalContext';
 import { TransactionItem } from './TransactionItem';
 import type { Transaction } from '../context/AppReducer';
+import { AnimatePresence } from 'framer-motion';
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -77,13 +78,15 @@ export const PendingTransactions = () => {
 
       {!isCollapsed && (
         <ul className="list">
-          {pendingTransactions.length === 0 ? (
-            <p className="empty-msg">No pending items for this month.</p>
-          ) : (
-            pendingTransactions.map(transaction => (
-              <TransactionItem key={transaction.id} transaction={transaction} />
-            ))
-          )}
+          <AnimatePresence mode="popLayout">
+            {pendingTransactions.length === 0 ? (
+              <p className="empty-msg">No pending items for this month.</p>
+            ) : (
+              pendingTransactions.map(transaction => (
+                <TransactionItem key={transaction.id} transaction={transaction} />
+              ))
+            )}
+          </AnimatePresence>
         </ul>
       )}
       <div style={{ borderBottom: '1px solid #e1e8ed', margin: '20px 0' }}></div>
