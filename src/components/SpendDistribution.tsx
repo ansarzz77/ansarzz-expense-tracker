@@ -1,5 +1,6 @@
 import { useContext, useState, useMemo } from 'react';
-import { GlobalContext } from '../context/GlobalState';
+import { GlobalContext } from '../context/GlobalContext';
+import type { Transaction } from '../context/AppReducer';
 
 const COLORS = [
   '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', 
@@ -20,7 +21,7 @@ export const SpendDistribution = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const expenseTransactions = useMemo(() => 
-    transactions.filter(t => t.type === 'expense' && t.status === 'completed'),
+    transactions.filter((t: Transaction) => t.type === 'expense' && t.status === 'completed'),
     [transactions]
   );
 
@@ -28,7 +29,7 @@ export const SpendDistribution = () => {
     const totals: Record<string, number> = {};
     let grandTotal = 0;
 
-    expenseTransactions.forEach(t => {
+    expenseTransactions.forEach((t: Transaction) => {
       const amount = Math.abs(t.amount);
       totals[t.category] = (totals[t.category] || 0) + amount;
       grandTotal += amount;
@@ -96,7 +97,7 @@ export const SpendDistribution = () => {
   };
 
   const selectedTransactions = selectedCategory 
-    ? expenseTransactions.filter(t => t.category === selectedCategory)
+    ? expenseTransactions.filter((t: Transaction) => t.category === selectedCategory)
     : [];
 
   if (categoryData.grandTotal === 0) {

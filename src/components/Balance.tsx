@@ -1,5 +1,6 @@
 import { useContext } from 'react';
-import { GlobalContext } from '../context/GlobalState';
+import { GlobalContext } from '../context/GlobalContext';
+import type { Transaction } from '../context/AppReducer';
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -14,20 +15,20 @@ export const Balance = () => {
   const currentYear = now.getFullYear();
 
   // Actual Balance: Total of all COMPLETED items across ALL time (total cash on hand)
-  const actualTransactions = transactions.filter(t => t.status === 'completed');
-  const actualTotal = actualTransactions.reduce((acc, t) => 
+  const actualTransactions = transactions.filter((t: Transaction) => t.status === 'completed');
+  const actualTotal = actualTransactions.reduce((acc: number, t: Transaction) => 
     acc + (t.type === 'income' ? t.amount : -t.amount), 0
   ).toFixed(2);
 
   // Current Month's Pending Dues
-  const currentMonthPending = transactions.filter(t => {
+  const currentMonthPending = transactions.filter((t: Transaction) => {
     const [y, m, d] = t.dueDate.split('-').map(Number);
     const tDate = new Date(y, m - 1, d);
     return t.status === 'pending' && 
            tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
   });
 
-  const pendingTotal = currentMonthPending.reduce((acc, t) => 
+  const pendingTotal = currentMonthPending.reduce((acc: number, t: Transaction) => 
     acc + (t.type === 'income' ? t.amount : -t.amount), 0
   ).toFixed(2);
 

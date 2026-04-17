@@ -1,12 +1,13 @@
 import { useContext, useState } from 'react';
-import { GlobalContext } from '../context/GlobalState';
+import { GlobalContext } from '../context/GlobalContext';
 import { TransactionItem } from './TransactionItem';
+import type { Transaction } from '../context/AppReducer';
 
 export const TransactionList = () => {
   const { transactions } = useContext(GlobalContext);
   const [isCollapsed, setIsCollapsed] = useState(true);
 
-  const completedTransactions = transactions.filter(t => t.status === 'completed');
+  const completedTransactions = transactions.filter((t: Transaction) => t.status === 'completed');
 
   return (
     <div className="history-section">

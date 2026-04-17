@@ -8,7 +8,8 @@ import { FutureProjections } from './components/FutureProjections';
 import { ActivePlans } from './components/ActivePlans';
 import { AddTransaction } from './components/AddTransaction';
 
-import { GlobalProvider, GlobalContext } from './context/GlobalState';
+import { GlobalProvider } from './context/GlobalState';
+import { GlobalContext } from './context/GlobalContext';
 import { useContext } from 'react';
 
 import './App.css';

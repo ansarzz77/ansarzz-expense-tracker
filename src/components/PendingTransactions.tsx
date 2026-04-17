@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
-import { GlobalContext } from '../context/GlobalState';
+import { GlobalContext } from '../context/GlobalContext';
 import { TransactionItem } from './TransactionItem';
+import type { Transaction } from '../context/AppReducer';
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -16,30 +17,30 @@ export const PendingTransactions = () => {
   const currentYear = now.getFullYear();
 
   // Filter transactions for the current month and year using manual parsing
-  const currentMonthTransactions = transactions.filter(t => {
+  const currentMonthTransactions = transactions.filter((t: Transaction) => {
     const [y, m, d] = t.dueDate.split('-').map(Number);
     const tDate = new Date(y, m - 1, d);
     return tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
   });
 
   // Pending items specifically for the current month (for the list display)
-  const pendingTransactions = currentMonthTransactions.filter(t => t.status === 'pending');
+  const pendingTransactions = currentMonthTransactions.filter((t: Transaction) => t.status === 'pending');
 
   // Expected Income for current month only (completed + pending)
   const upcomingIncome = currentMonthTransactions
-    .filter(t => t.type === 'income')
-    .reduce((acc, item) => (acc += item.amount), 0)
+    .filter((t: Transaction) => t.type === 'income')
+    .reduce((acc: number, item: Transaction) => (acc += item.amount), 0)
     .toFixed(2);
 
   // Expected Expense for current month only (completed + pending)
   const upcomingExpense = currentMonthTransactions
-    .filter(t => t.type === 'expense')
-    .reduce((acc, item) => (acc += item.amount), 0)
+    .filter((t: Transaction) => t.type === 'expense')
+    .reduce((acc: number, item: Transaction) => (acc += item.amount), 0)
     .toFixed(2);
 
   // Projected Balance for current month only
   const projectedBalance = currentMonthTransactions
-    .reduce((acc, t) => acc + (t.type === 'income' ? t.amount : -t.amount), 0)
+    .reduce((acc: number, t: Transaction) => acc + (t.type === 'income' ? t.amount : -t.amount), 0)
     .toFixed(2);
 
   const monthName = MONTH_NAMES[currentMonth];

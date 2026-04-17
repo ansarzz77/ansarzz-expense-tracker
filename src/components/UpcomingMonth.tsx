@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
-import { GlobalContext } from '../context/GlobalState';
+import { GlobalContext } from '../context/GlobalContext';
 import { TransactionItem } from './TransactionItem';
+import type { Transaction } from '../context/AppReducer';
 
 export const UpcomingMonth = () => {
   const { transactions } = useContext(GlobalContext);
@@ -11,7 +12,7 @@ export const UpcomingMonth = () => {
   const nextMonthYear = now.getFullYear() + (now.getMonth() === 11 ? 1 : 0);
 
   // Filter transactions for the upcoming month and year
-  const upcomingMonthTransactions = transactions.filter(t => {
+  const upcomingMonthTransactions = transactions.filter((t: Transaction) => {
     const tDate = new Date(t.dueDate);
     return tDate.getMonth() === nextMonth && 
            tDate.getFullYear() === nextMonthYear;
@@ -19,19 +20,19 @@ export const UpcomingMonth = () => {
 
   // Expected Income for upcoming month
   const expIncome = upcomingMonthTransactions
-    .filter(t => t.type === 'income')
-    .reduce((acc, item) => (acc += item.amount), 0)
+    .filter((t: Transaction) => t.type === 'income')
+    .reduce((acc: number, item: Transaction) => (acc += item.amount), 0)
     .toFixed(2);
 
   // Expected Expense for upcoming month
   const expExpense = upcomingMonthTransactions
-    .filter(t => t.type === 'expense')
-    .reduce((acc, item) => (acc += item.amount), 0)
+    .filter((t: Transaction) => t.type === 'expense')
+    .reduce((acc: number, item: Transaction) => (acc += item.amount), 0)
     .toFixed(2);
 
   // Projected Balance for upcoming month
   const projBalance = (
-    upcomingMonthTransactions.reduce((acc, t) => acc + (t.type === 'income' ? t.amount : -t.amount), 0)
+    upcomingMonthTransactions.reduce((acc: number, t: Transaction) => acc + (t.type === 'income' ? t.amount : -t.amount), 0)
   ).toFixed(2);
 
   // Get month name

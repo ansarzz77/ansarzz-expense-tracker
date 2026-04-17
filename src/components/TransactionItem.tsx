@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { GlobalContext } from '../context/GlobalState';
+import { GlobalContext } from '../context/GlobalContext';
 import type { Transaction } from '../context/AppReducer';
 
 export const TransactionItem = ({ transaction }: { transaction: Transaction }) => {

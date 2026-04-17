@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { GlobalContext } from '../context/GlobalState';
+import { GlobalContext } from '../context/GlobalContext';
 import type { RecurringPlan } from '../context/AppReducer';
 
 export const ActivePlans = () => {
@@ -25,7 +25,7 @@ export const ActivePlans = () => {
 
   const handleUpdate = (e: React.FormEvent) => {
     e.preventDefault();
-    const plan = plans.find(p => p.id === editingId);
+    const plan = plans.find((p: RecurringPlan) => p.id === editingId);
     const numericAmount = parseFloat(editAmount);
 
     if (plan && !isNaN(numericAmount)) {

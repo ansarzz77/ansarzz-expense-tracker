@@ -1,5 +1,6 @@
 import { useContext } from 'react';
-import { GlobalContext } from '../context/GlobalState';
+import { GlobalContext } from '../context/GlobalContext';
+import type { Transaction } from '../context/AppReducer';
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -14,7 +15,7 @@ export const IncomeExpenses = () => {
   const currentYear = now.getFullYear();
 
   // Completed items in current month
-  const currentMonthCompleted = transactions.filter(t => {
+  const currentMonthCompleted = transactions.filter((t: Transaction) => {
     const [y, m, d] = t.dueDate.split('-').map(Number);
     const tDate = new Date(y, m - 1, d);
     return t.status === 'completed' && 
@@ -22,13 +23,13 @@ export const IncomeExpenses = () => {
   });
 
   const income = currentMonthCompleted
-    .filter(transaction => transaction.type === 'income')
-    .reduce((acc, item) => (acc += item.amount), 0)
+    .filter((transaction: Transaction) => transaction.type === 'income')
+    .reduce((acc: number, item: Transaction) => (acc += item.amount), 0)
     .toFixed(2);
 
   const expense = currentMonthCompleted
-    .filter(transaction => transaction.type === 'expense')
-    .reduce((acc, item) => (acc += item.amount), 0)
+    .filter((transaction: Transaction) => transaction.type === 'expense')
+    .reduce((acc: number, item: Transaction) => (acc += item.amount), 0)
     .toFixed(2);
 
   const monthName = MONTH_NAMES[currentMonth];

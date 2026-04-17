@@ -1,5 +1,5 @@
 import { useContext, useRef } from 'react';
-import { GlobalContext } from '../context/GlobalState';
+import { GlobalContext } from '../context/GlobalContext';
 import { downloadCSV } from '../utils/reportGenerator';
 
 export const Header = () => {

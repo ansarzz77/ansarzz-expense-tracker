@@ -1,6 +1,7 @@
 import { useContext, useState } from 'react';
-import { GlobalContext } from '../context/GlobalState';
+import { GlobalContext } from '../context/GlobalContext';
 import { TransactionItem } from './TransactionItem';
+import type { Transaction } from '../context/AppReducer';
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -29,7 +30,7 @@ export const FutureProjections = () => {
     const targetMonth = targetDate.getMonth();
     const targetYear = targetDate.getFullYear();
 
-    const monthTransactions = transactions.filter(t => {
+    const monthTransactions = transactions.filter((t: Transaction) => {
       // Split YYYY-MM-DD and create local date to compare
       const [y, m, d] = t.dueDate.split('-').map(Number);
       const tDate = new Date(y, m - 1, d);
@@ -37,23 +38,23 @@ export const FutureProjections = () => {
     });
 
     const expIncome = monthTransactions
-      .filter(t => t.type === 'income')
-      .reduce((acc, item) => (acc += item.amount), 0)
+      .filter((t: Transaction) => t.type === 'income')
+      .reduce((acc: number, item: Transaction) => (acc += item.amount), 0)
       .toFixed(2);
 
     const expExpense = monthTransactions
-      .filter(t => t.type === 'expense')
-      .reduce((acc, item) => (acc += item.amount), 0)
+      .filter((t: Transaction) => t.type === 'expense')
+      .reduce((acc: number, item: Transaction) => (acc += item.amount), 0)
       .toFixed(2);
 
     const projBalance = (
-      monthTransactions.reduce((acc, t) => acc + (t.type === 'income' ? t.amount : -t.amount), 0)
+      monthTransactions.reduce((acc: number, t: Transaction) => acc + (t.type === 'income' ? t.amount : -t.amount), 0)
     ).toFixed(2);
 
     const monthName = `${MONTH_NAMES[targetMonth]} ${targetYear}`;
 
     // For future months, we likely only care about pending items in the list
-    const pendingOnly = monthTransactions.filter(t => t.status === 'pending');
+    const pendingOnly = monthTransactions.filter((t: Transaction) => t.status === 'pending');
 
     return {
       monthName,
