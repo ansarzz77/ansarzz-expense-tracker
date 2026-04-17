@@ -1,41 +1,13 @@
-import { createContext, useReducer, useEffect, useState, type ReactNode } from 'react';
+import { useReducer, useEffect, useState, type ReactNode } from 'react';
 import AppReducer, { type State, type Transaction, type RecurringPlan } from './AppReducer';
 import { supabase } from '../supabaseClient';
+import { GlobalContext } from './GlobalContext';
 
 // Initial state
 const initialState: State = {
   transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
   plans: JSON.parse(localStorage.getItem('plans') || '[]'),
 };
-
-interface GlobalContextProps extends State {
-  loading: boolean;
-  deleteTransaction: (id: number) => void;
-  addTransaction: (transaction: Transaction) => void;
-  updateTransaction: (transaction: Transaction) => void;
-  clearTransactions: () => void;
-  addRecurringPlan: (plan: RecurringPlan) => void;
-  settleTransaction: (id: number, paidDate: string) => void;
-  deletePlan: (id: number) => void;
-  updatePlan: (plan: RecurringPlan, updateInstances: boolean) => void;
-  importData: (data: State) => void;
-}
-
-// Create context
-export const GlobalContext = createContext<GlobalContextProps>({
-  transactions: initialState.transactions,
-  plans: initialState.plans,
-  loading: true,
-  deleteTransaction: () => {},
-  addTransaction: () => {},
-  updateTransaction: () => {},
-  clearTransactions: () => {},
-  addRecurringPlan: () => {},
-  settleTransaction: () => {},
-  deletePlan: () => {},
-  updatePlan: () => {},
-  importData: () => {},
-});
 
 // Provider component
 export const GlobalProvider = ({ children }: { children: ReactNode }) => {
@@ -188,7 +160,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     });
   }
 
-  function importData(data: any) {
+  function importData(data: State) {
     dispatch({ type: 'IMPORT_DATA', payload: data });
   }
 

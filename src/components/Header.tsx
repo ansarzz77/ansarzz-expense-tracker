@@ -33,7 +33,7 @@ export const Header = () => {
           importData(data);
           alert('Data imported successfully!');
         }
-      } catch (err) {
+      } catch {
         alert('Invalid backup file.');
       }
     };

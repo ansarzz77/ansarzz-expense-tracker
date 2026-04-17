@@ -1,6 +1,7 @@
 import { Header } from './components/Header';
 import { Balance } from './components/Balance';
 import { IncomeExpenses } from './components/IncomeExpenses';
+import { SpendDistribution } from './components/SpendDistribution';
 import { TransactionList } from './components/TransactionList';
 import { PendingTransactions } from './components/PendingTransactions';
 import { FutureProjections } from './components/FutureProjections';
@@ -30,6 +31,7 @@ const AppContent = () => {
       <div className="container">
         <Balance />
         <IncomeExpenses />
+        <SpendDistribution />
         <PendingTransactions />
         <FutureProjections />
         <ActivePlans />
