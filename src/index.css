@@ -17,6 +17,30 @@
   --shadow-lg: 0 16px 24px rgba(77, 166, 116, 0.15);
 }
 
+[data-mood="warning"] {
+  --primary-color: #f59e0b;
+  --primary-dark: #d97706;
+  --secondary-color: #fbbf24;
+  --bg-color: #fffbeb;
+  --text-primary: #451a03;
+  --text-secondary: #92400e;
+  --shadow-sm: 0 4px 6px rgba(245, 158, 11, 0.05);
+  --shadow-md: 0 8px 16px rgba(245, 158, 11, 0.1);
+  --shadow-lg: 0 16px 24px rgba(245, 158, 11, 0.15);
+}
+
+[data-mood="overspent"] {
+  --primary-color: #e11d48;
+  --primary-dark: #be123c;
+  --secondary-color: #fb7185;
+  --bg-color: #fff1f2;
+  --text-primary: #4c0519;
+  --text-secondary: #9f1239;
+  --shadow-sm: 0 4px 6px rgba(225, 29, 72, 0.05);
+  --shadow-md: 0 8px 16px rgba(225, 29, 72, 0.1);
+  --shadow-lg: 0 16px 24px rgba(225, 29, 72, 0.15);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -33,6 +57,11 @@ body {
   justify-content: center;
   align-items: flex-start;
   padding: 2rem 1rem;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.card, .balance-container, .inc-exp-container, .add-transaction-card, .list li, .btn, .logo-container {
+  transition: all 0.5s ease;
 }
 
 #root {
