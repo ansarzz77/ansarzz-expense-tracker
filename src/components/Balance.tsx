@@ -36,10 +36,14 @@ export const Balance = () => {
 
   // Burn Rate Calculation (Current Month Only)
   const currentMonthCompletedExpenses = transactions.filter((t: Transaction) => {
-    const [y, m, d] = t.dueDate.split('-').map(Number);
-    const tDate = new Date(y, m - 1, d);
-    return t.status === 'completed' && t.type === 'expense' && 
-           tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
+    if (t.status !== 'completed' || t.type !== 'expense') return false;
+    
+    // Use paidDate if available, otherwise fallback to dueDate
+    const dateStr = t.paidDate || t.dueDate;
+    const [y, m] = dateStr.split('-').map(Number);
+    
+    // Month in split is 1-based (from YYYY-MM-DD), currentMonth from Date() is 0-based
+    return (m - 1) === currentMonth && y === currentYear;
   });
 
   const totalMonthExpenses = currentMonthCompletedExpenses.reduce((acc, t) => acc + t.amount, 0);
