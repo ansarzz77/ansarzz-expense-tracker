@@ -213,7 +213,7 @@ export const SpendDistribution = () => {
                   <span>{t.text}</span>
                   <small>{t.paidDate || t.dueDate}</small>
                 </div>
-                <span className="details-amount">-${Math.abs(t.amount).toFixed(2)}</span>
+                <span className="details-amount">-₹{Math.abs(t.amount).toFixed(2)}</span>
               </li>
             ))}
           </ul>
