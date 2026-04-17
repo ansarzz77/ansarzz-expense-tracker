@@ -555,6 +555,34 @@ h3 {
   }
 }
 
+/* Trend Indicator Styles */
+.trend-indicator {
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: block;
+  margin-top: 2px;
+}
+
+.trend-up-good {
+  color: var(--income-color);
+}
+
+.trend-down-bad {
+  color: var(--expense-color);
+}
+
+.trend-up-bad {
+  color: var(--expense-color);
+}
+
+.trend-down-good {
+  color: var(--income-color);
+}
+
+.trend-neutral {
+  color: var(--text-secondary);
+}
+
 /* Spend Distribution Styles */
 .spend-distribution-container {
   margin-bottom: 2rem;
