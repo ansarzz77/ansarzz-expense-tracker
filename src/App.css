@@ -645,12 +645,38 @@ h3 {
 
 .legend-item {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
   cursor: pointer;
   padding: 6px;
   border-radius: 6px;
   transition: background 0.2s;
+}
+
+.legend-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-values {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding-left: 20px;
+}
+
+.benchmark-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0px 4px;
+  border-radius: 4px;
+}
+
+.benchmark-label.new {
+  background: #e9ecef;
+  color: #495057;
 }
 
 .legend-item:hover {

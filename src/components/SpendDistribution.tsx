@@ -14,11 +14,16 @@ interface CategorySummary {
   percentage: number;
   startAngle: number;
   endAngle: number;
+  rollingAverage: number;
 }
 
 export const SpendDistribution = () => {
   const { transactions } = useContext(GlobalContext);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  const now = new Date();
+  const currentMonth = now.getMonth();
+  const currentYear = now.getFullYear();
 
   const expenseTransactions = useMemo(() => 
     transactions.filter((t: Transaction) => t.type === 'expense' && t.status === 'completed'),
@@ -26,19 +31,45 @@ export const SpendDistribution = () => {
   );
 
   const categoryData = useMemo(() => {
-    const totals: Record<string, number> = {};
+    // 1. Calculate Current Month Totals
+    const currentMonthTotals: Record<string, number> = {};
     let grandTotal = 0;
 
-    expenseTransactions.forEach((t: Transaction) => {
+    const currentMonthExpenses = expenseTransactions.filter(t => {
+      const dateStr = t.paidDate || t.dueDate;
+      const [y, m] = dateStr.split('-').map(Number);
+      return (m - 1) === currentMonth && y === currentYear;
+    });
+
+    currentMonthExpenses.forEach((t: Transaction) => {
       const amount = Math.abs(t.amount);
-      totals[t.category] = (totals[t.category] || 0) + amount;
+      currentMonthTotals[t.category] = (currentMonthTotals[t.category] || 0) + amount;
       grandTotal += amount;
+    });
+
+    // 2. Calculate Rolling 3-Month Average (Previous 3 calendar months)
+    const rollingTotals: Record<string, number> = {};
+    const prevMonths: { m: number; y: number }[] = [];
+    for (let i = 1; i <= 3; i++) {
+      const d = new Date(currentYear, currentMonth - i, 1);
+      prevMonths.push({ m: d.getMonth(), y: d.getFullYear() });
+    }
+
+    const historicalExpenses = expenseTransactions.filter(t => {
+      const dateStr = t.paidDate || t.dueDate;
+      const [y, m] = dateStr.split('-').map(Number);
+      return prevMonths.some(pm => pm.m === (m - 1) && pm.y === y);
+    });
+
+    historicalExpenses.forEach((t: Transaction) => {
+      const amount = Math.abs(t.amount);
+      rollingTotals[t.category] = (rollingTotals[t.category] || 0) + amount;
     });
 
     const summaries: CategorySummary[] = [];
     let currentAngle = 0;
 
-    Object.entries(totals)
+    Object.entries(currentMonthTotals)
       .sort((a, b) => b[1] - a[1]) // Sort by amount descending
       .forEach(([category, amount], index) => {
         const percentage = grandTotal > 0 ? (amount / grandTotal) : 0;
@@ -50,14 +81,15 @@ export const SpendDistribution = () => {
           color: COLORS[index % COLORS.length],
           percentage: percentage * 100,
           startAngle: currentAngle,
-          endAngle: currentAngle + angleSize
+          endAngle: currentAngle + angleSize,
+          rollingAverage: (rollingTotals[category] || 0) / 3
         });
         
         currentAngle += angleSize;
       });
 
-    return { summaries, grandTotal };
-  }, [expenseTransactions]);
+    return { summaries, grandTotal, currentMonthExpenses };
+  }, [expenseTransactions, currentMonth, currentYear]);
 
   // SVG Helper: Convert polar coordinates to Cartesian
   const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -97,8 +129,26 @@ export const SpendDistribution = () => {
   };
 
   const selectedTransactions = selectedCategory 
-    ? expenseTransactions.filter((t: Transaction) => t.category === selectedCategory)
+    ? categoryData.currentMonthExpenses.filter((t: Transaction) => t.category === selectedCategory)
     : [];
+
+  const renderBenchmark = (summary: CategorySummary) => {
+    if (summary.rollingAverage === 0) return <span className="benchmark-label new">New</span>;
+    
+    const diff = ((summary.amount - summary.rollingAverage) / summary.rollingAverage) * 100;
+    const isPositive = diff > 0;
+    const isNeutral = Math.abs(diff) < 0.1;
+    
+    // For expense, positive (increase) is bad.
+    const colorClass = isPositive ? 'trend-up-bad' : (isNeutral ? 'trend-neutral' : 'trend-down-good');
+    const icon = isPositive ? '▲' : (isNeutral ? '•' : '▼');
+    
+    return (
+      <span className={`benchmark-label ${colorClass}`} title={`Avg: ₹${summary.rollingAverage.toFixed(0)}`}>
+        {icon} {Math.abs(diff).toFixed(0)}%
+      </span>
+    );
+  };
 
   if (categoryData.grandTotal === 0) {
     return null;
@@ -119,7 +169,7 @@ export const SpendDistribution = () => {
                 className={`chart-slice ${selectedCategory === s.category ? 'active' : ''}`}
                 onClick={() => handleSliceClick(s.category)}
               >
-                <title>{`${s.category}: $${s.amount.toFixed(2)} (${s.percentage.toFixed(1)}%)`}</title>
+                <title>{`${s.category}: ₹${s.amount.toFixed(2)} (${s.percentage.toFixed(1)}%)`}</title>
               </path>
             ))}
             {/* Inner circle for the donut effect */}
@@ -127,7 +177,7 @@ export const SpendDistribution = () => {
             <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" className="chart-center-text">
               Total
               <tspan x="50" dy="1.2em" fontWeight="bold">
-                ${categoryData.grandTotal.toFixed(0)}
+                ₹{categoryData.grandTotal.toFixed(0)}
               </tspan>
             </text>
           </svg>
@@ -140,9 +190,14 @@ export const SpendDistribution = () => {
               className={`legend-item ${selectedCategory === s.category ? 'active' : ''}`}
               onClick={() => handleSliceClick(s.category)}
             >
-              <span className="legend-color" style={{ backgroundColor: s.color }}></span>
-              <span className="legend-label">{s.category}</span>
-              <span className="legend-value">${s.amount.toFixed(0)}</span>
+              <div className="legend-header">
+                <span className="legend-color" style={{ backgroundColor: s.color }}></span>
+                <span className="legend-label">{s.category}</span>
+              </div>
+              <div className="legend-values">
+                <span className="legend-value">₹{s.amount.toFixed(0)}</span>
+                {renderBenchmark(s)}
+              </div>
             </div>
           ))}
         </div>
