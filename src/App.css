@@ -114,6 +114,26 @@
   margin-bottom: 2rem;
 }
 
+.balance-info-grid {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1.5rem;
+  padding: 0 10px;
+}
+
+.balance-info-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  flex: 1;
+}
+
+.balance-info-item:first-of-type {
+  border-right: 1px solid #f1f3f5;
+}
+
 .balance-container h4 {
   text-transform: uppercase;
   font-size: 0.8rem;
