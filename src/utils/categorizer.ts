@@ -1,23 +1,6 @@
-export const categories = [
-  'General',
-  'Food',
-  'Rent',
-  'Salary',
-  'Entertainment',
-  'Transportation',
-  'Shopping',
-  'Loan Instalment',
-  'Society Maintenance',
-  'Property Tax',
-  'Utility-Self',
-  'Utility-Parents',
-  'Car Expense',
-  'Mom Dad to Spent',
-  'Spouse Contribution',
-  'Kids Madrassa',
-  'Investment',
-  'Credit Card'
-];
+import { SEED_CATEGORIES } from '../context/GlobalState';
+
+export const categories = SEED_CATEGORIES;
 
 const categoryKeywords: Record<string, string[]> = {
   'Food': ['swiggy', 'zomato', 'restaurant', 'hotel', 'food', 'grocery', 'supermarket', 'blinkit', 'zepto', 'bigbasket', 'starbucks', 'mcdonalds', 'kfc', 'bakery', 'cafe'],

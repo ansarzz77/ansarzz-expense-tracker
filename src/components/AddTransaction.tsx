@@ -3,10 +3,11 @@ import { GlobalContext } from '../context/GlobalContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CsvImporter } from './CsvImporter';
 
-const QUICK_CATEGORIES = ['Food', 'Transportation', 'Shopping', 'Entertainment', 'General'];
 const QUICK_AMOUNTS = [10, 50, 100, 500, 1000];
 
 export const AddTransaction = () => {
+  const { addRecurringPlan, addTransaction, categories, addCategory } = useContext(GlobalContext);
+  
   const [activeTab, setActiveTab] = useState<'quick' | 'planned' | 'import'>('quick');
   const [text, setText] = useState('');
   const [amount, setAmount] = useState<string>('0');
@@ -15,8 +16,17 @@ export const AddTransaction = () => {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [frequency, setFrequency] = useState<'one-time' | 'monthly' | 'quarterly' | 'half-yearly' | 'yearly'>('one-time');
   const [note, setNote] = useState('');
+  const [isAddingCategory, setIsAddingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
-  const { addRecurringPlan, addTransaction } = useContext(GlobalContext);
+  const handleAddCategory = () => {
+    if (newCategoryName.trim()) {
+      addCategory(newCategoryName.trim());
+      setCategory(newCategoryName.trim());
+      setNewCategoryName('');
+      setIsAddingCategory(false);
+    }
+  };
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -169,29 +179,37 @@ export const AddTransaction = () => {
 
             <div className="form-control">
               <label htmlFor="category">Category</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option value="General">General</option>
-                <option value="Food">Food</option>
-                <option value="Rent">Rent</option>
-                <option value="Salary">Salary</option>
-                <option value="Entertainment">Entertainment</option>
-                <option value="Transportation">Transportation</option>
-                <option value="Shopping">Shopping</option>
-                <option value="Loan Instalment">Loan Instalment</option>
-                <option value="Society Maintenance">Society Maintenance</option>
-                <option value="Property Tax">Property Tax</option>
-                <option value="Utility-Self">Utility-Self</option>
-                <option value="Utility-Parents">Utility-Parents</option>
-                <option value="Car Expense">Car Expense</option>
-                <option value="Mom Dad to Spent">Mom Dad to Spent</option>
-                <option value="Spouse Contribution">Spouse Contribution</option>
-                <option value="Kids Madrassa">Kids Madrassa</option>
-                <option value="Investment">Investment</option>
-                <option value="Credit Card">Credit Card</option>
-              </select>
+              {isAddingCategory ? (
+                <div className="new-category-input">
+                  <input 
+                    type="text" 
+                    value={newCategoryName} 
+                    onChange={(e) => setNewCategoryName(e.target.value)}
+                    placeholder="New category name"
+                    autoFocus
+                  />
+                  <div className="new-cat-actions">
+                    <button type="button" onClick={handleAddCategory} className="btn-small">Add</button>
+                    <button type="button" onClick={() => setIsAddingCategory(false)} className="btn-small secondary">Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <select value={category} onChange={(e) => {
+                  if (e.target.value === 'NEW') {
+                    setIsAddingCategory(true);
+                  } else {
+                    setCategory(e.target.value);
+                  }
+                }}>
+                  {categories.map(cat => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                  <option value="NEW">+ Add New Category...</option>
+                </select>
+              )}
               
               <div className="quick-chips">
-                {QUICK_CATEGORIES.map(cat => (
+                {categories.slice(0, 5).map(cat => (
                   <button 
                     key={cat} 
                     type="button" 

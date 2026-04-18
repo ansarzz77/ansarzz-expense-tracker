@@ -1106,3 +1106,46 @@ h3 {
   font-size: 2.5rem;
   margin-bottom: 1rem;
 }
+
+/* New Category Input Styles */
+.new-category-input {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.5);
+  padding: 15px;
+  border-radius: 16px;
+  border: 1px solid var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.new-category-input input {
+  background: white !important;
+}
+
+.new-cat-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-small {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 0;
+  font-weight: 700;
+  font-size: 0.85rem;
+  cursor: pointer;
+  background: var(--primary-color);
+  color: white;
+  flex: 1;
+}
+
+.btn-small.secondary {
+  background: #f1f3f5;
+  color: var(--text-secondary);
+}
+
+.btn-small:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}

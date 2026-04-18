@@ -31,12 +31,15 @@ export type Action =
   | { type: 'SETTLE_TRANSACTION'; payload: { id: number; paidDate: string } }
   | { type: 'DELETE_PLAN'; payload: number }
   | { type: 'UPDATE_PLAN'; payload: { plan: RecurringPlan; updateInstances: boolean } }
+  | { type: 'ADD_CATEGORY'; payload: string }
+  | { type: 'DELETE_CATEGORY'; payload: string }
   | { type: 'TOGGLE_THEME' }
   | { type: 'IMPORT_DATA'; payload: State };
 
 export interface State {
   transactions: Transaction[];
   plans: RecurringPlan[];
+  categories: string[];
   theme: 'light' | 'dark';
 }
 
@@ -47,7 +50,19 @@ const AppReducer = (state: State, action: Action): State => {
         ...state,
         transactions: action.payload.transactions || [],
         plans: action.payload.plans || [],
+        categories: action.payload.categories || state.categories,
         theme: action.payload.theme || state.theme,
+      };
+    case 'ADD_CATEGORY':
+      if (state.categories.includes(action.payload)) return state;
+      return {
+        ...state,
+        categories: [...state.categories, action.payload]
+      };
+    case 'DELETE_CATEGORY':
+      return {
+        ...state,
+        categories: state.categories.filter(c => c !== action.payload)
       };
     case 'TOGGLE_THEME':
       return {

@@ -3,10 +3,18 @@ import AppReducer, { type State, type Transaction, type RecurringPlan } from './
 import { supabase } from '../supabaseClient';
 import { GlobalContext } from './GlobalContext';
 
+export const SEED_CATEGORIES = [
+  'General', 'Food', 'Rent', 'Salary', 'Entertainment', 'Transportation', 
+  'Shopping', 'Loan Instalment', 'Society Maintenance', 'Property Tax', 
+  'Utility-Self', 'Utility-Parents', 'Car Expense', 'Mom Dad to Spent', 
+  'Spouse Contribution', 'Kids Madrassa', 'Investment', 'Credit Card'
+];
+
 // Initial state
 const initialState: State = {
   transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
   plans: JSON.parse(localStorage.getItem('plans') || '[]'),
+  categories: JSON.parse(localStorage.getItem('categories') || JSON.stringify(SEED_CATEGORIES)),
   theme: (localStorage.getItem('theme') as 'light' | 'dark') || 
          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
 };
@@ -48,6 +56,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     localStorage.setItem('transactions', JSON.stringify(state.transactions));
     localStorage.setItem('plans', JSON.stringify(state.plans));
+    localStorage.setItem('categories', JSON.stringify(state.categories));
     localStorage.setItem('theme', state.theme);
 
     const syncToCloud = async () => {
@@ -60,6 +69,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
           payload: { 
             transactions: state.transactions, 
             plans: state.plans,
+            categories: state.categories,
             theme: state.theme
           },
           updated_at: new Date()
@@ -68,7 +78,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
 
     const timeoutId = setTimeout(syncToCloud, 2000); // Debounce sync by 2 seconds
     return () => clearTimeout(timeoutId);
-  }, [state.transactions, state.plans, state.theme]);
+  }, [state.transactions, state.plans, state.categories, state.theme]);
 
   // Actions
   function toggleTheme() {
@@ -93,6 +103,14 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
 
   function clearTransactions() {
     dispatch({ type: 'CLEAR_TRANSACTIONS' });
+  }
+
+  function addCategory(category: string) {
+    dispatch({ type: 'ADD_CATEGORY', payload: category });
+  }
+
+  function deleteCategory(category: string) {
+    dispatch({ type: 'DELETE_CATEGORY', payload: category });
   }
 
   function addRecurringPlan(plan: RecurringPlan) {
