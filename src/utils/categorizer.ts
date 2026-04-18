@@ -23,6 +23,14 @@ const categoryKeywords: Record<string, string[]> = {
 export const autoCategorize = (description: string): string => {
   const desc = description.toLowerCase();
   
+  // First, check if the description directly contains any category name
+  for (const category of categories) {
+    if (desc.includes(category.toLowerCase())) {
+      return category;
+    }
+  }
+  
+  // Then fall back to keyword mapping
   for (const [category, keywords] of Object.entries(categoryKeywords)) {
     if (keywords.some(keyword => desc.includes(keyword.toLowerCase()))) {
       return category;

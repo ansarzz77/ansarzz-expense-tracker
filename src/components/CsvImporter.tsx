@@ -9,15 +9,16 @@ interface Mapping {
   debit: string;
   credit: string;
   date: string;
+  category: string;
 }
 
 export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
   const [file, setFile] = useState<File | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
   const [previewRows, setPreviewRows] = useState<any[]>([]);
-  const [mapping, setMapping] = useState<Mapping>({ text: '', debit: '', credit: '', date: '' });
+  const [mapping, setMapping] = useState<Mapping>({ text: '', debit: '', credit: '', date: '', category: '' });
   const [step, setStep] = useState<1 | 2 | 3>(1);
-  const { addTransaction } = useContext(GlobalContext);
+  const { addTransaction, categories } = useContext(GlobalContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -35,13 +36,14 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
             setStep(2);
             
             // Try to auto-guess mapping
-            const guess: Mapping = { text: '', debit: '', credit: '', date: '' };
+            const guess: Mapping = { text: '', debit: '', credit: '', date: '', category: '' };
             results.meta.fields.forEach(h => {
               const lower = h.toLowerCase();
               if (lower.includes('desc') || lower.includes('particulars') || lower.includes('remark')) guess.text = h;
               if (lower.includes('debit') || lower.includes('withdrawal') || lower.includes('out')) guess.debit = h;
               if (lower.includes('credit') || lower.includes('deposit') || lower.includes('in')) guess.credit = h;
               if (lower.includes('date')) guess.date = h;
+              if (lower.includes('cat')) guess.category = h;
             });
             setMapping(guess);
           }
@@ -91,11 +93,20 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
 
           const description = row[mapping.text] || 'Imported Transaction';
 
+          let finalCategory = autoCategorize(description);
+          if (mapping.category && row[mapping.category]) {
+            const csvCategory = String(row[mapping.category]).trim();
+            // Check if it's a valid category
+            if (categories.some(c => c.toLowerCase() === csvCategory.toLowerCase())) {
+              finalCategory = categories.find(c => c.toLowerCase() === csvCategory.toLowerCase()) || csvCategory;
+            }
+          }
+
           addTransaction({
             id: Math.floor(Math.random() * 1000000000),
             text: description,
             amount: amount,
-            category: autoCategorize(description),
+            category: finalCategory,
             type: type,
             dueDate: normalizedDate,
             status: 'completed',
@@ -158,6 +169,13 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
               <label>Description</label>
               <select value={mapping.text} onChange={e => setMapping({...mapping, text: e.target.value})}>
                 <option value="">Select Column...</option>
+                {headers.map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
+            </div>
+            <div className="mapping-row">
+              <label>Category (Optional)</label>
+              <select value={mapping.category} onChange={e => setMapping({...mapping, category: e.target.value})}>
+                <option value="">Auto-categorize from description</option>
                 {headers.map(h => <option key={h} value={h}>{h}</option>)}
               </select>
             </div>
