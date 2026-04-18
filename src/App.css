@@ -825,3 +825,129 @@ h3 {
     width: 100%;
   }
 }
+
+/* Quick Add Styles */
+.tab-header {
+  display: flex;
+  background: rgba(0, 0, 0, 0.05);
+  padding: 4px;
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+
+.tab-btn {
+  flex: 1;
+  border: 0;
+  padding: 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.tab-btn.active {
+  background: white;
+  color: var(--primary-color);
+  box-shadow: var(--shadow-sm);
+}
+
+.type-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.type-btn {
+  flex: 1;
+  padding: 10px;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  font-weight: 700;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.type-btn.expense.active {
+  background: #fff5f5;
+  color: var(--expense-color);
+  border-color: var(--expense-color);
+}
+
+.type-btn.income.active {
+  background: #f0fff4;
+  color: var(--income-color);
+  border-color: var(--income-color);
+}
+
+.quick-options {
+  margin: 15px 0;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 14px;
+}
+
+.quick-chips-label {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.chip-btn {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.chip-btn:hover {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.chip-btn.active {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.chip-btn.amount {
+  background: #f1f3f5;
+  border-color: transparent;
+}
+
+.chip-btn.amount:hover {
+  background: #e9ecef;
+  color: var(--primary-color);
+}
+
+.chip-btn.clear {
+  background: #fff5f5;
+  color: var(--expense-color);
+  border-color: transparent;
+}
+
+.income-btn {
+  background-color: var(--income-color) !important;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.3) !important;
+}
+
+.income-btn:hover {
+  background-color: #16a34a !important;
+}
