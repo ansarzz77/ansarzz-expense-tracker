@@ -6,16 +6,16 @@ import { autoCategorize } from '../utils/categorizer';
 
 interface Mapping {
   text: string;
-  amount: string;
+  debit: string;
+  credit: string;
   date: string;
-  type: string;
 }
 
 export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
   const [file, setFile] = useState<File | null>(null);
   const [headers, setHeaders] = useState<string[]>([]);
   const [previewRows, setPreviewRows] = useState<any[]>([]);
-  const [mapping, setMapping] = useState<Mapping>({ text: '', amount: '', date: '', type: '' });
+  const [mapping, setMapping] = useState<Mapping>({ text: '', debit: '', credit: '', date: '' });
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const { addTransaction } = useContext(GlobalContext);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -35,13 +35,13 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
             setStep(2);
             
             // Try to auto-guess mapping
-            const guess: Mapping = { text: '', amount: '', date: '', type: '' };
+            const guess: Mapping = { text: '', debit: '', credit: '', date: '' };
             results.meta.fields.forEach(h => {
               const lower = h.toLowerCase();
               if (lower.includes('desc') || lower.includes('particulars') || lower.includes('remark')) guess.text = h;
-              if (lower.includes('amount') || lower.includes('value')) guess.amount = h;
+              if (lower.includes('debit') || lower.includes('withdrawal') || lower.includes('out')) guess.debit = h;
+              if (lower.includes('credit') || lower.includes('deposit') || lower.includes('in')) guess.credit = h;
               if (lower.includes('date')) guess.date = h;
-              if (lower.includes('type') || lower.includes('cr/dr')) guess.type = h;
             });
             setMapping(guess);
           }
@@ -61,24 +61,24 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
         let count = 0;
 
         data.forEach(row => {
-          const rawAmount = row[mapping.amount];
-          if (!rawAmount) return;
+          let amount = 0;
+          let type: 'income' | 'expense' = 'expense';
 
-          // Clean amount string (remove currency symbols, commas)
-          let amount = parseFloat(String(rawAmount).replace(/[^0-9.-]/g, ''));
-          if (isNaN(amount)) return;
+          const debitVal = row[mapping.debit];
+          const creditVal = row[mapping.credit];
 
-          // Determine type if mapping exists
-          let type: 'income' | 'expense' = amount > 0 ? 'income' : 'expense';
-          if (mapping.type && row[mapping.type]) {
-            const rowType = String(row[mapping.type]).toLowerCase();
-            if (rowType.includes('dr') || rowType.includes('debit') || rowType.includes('withdrawal')) type = 'expense';
-            if (rowType.includes('cr') || rowType.includes('credit') || rowType.includes('deposit')) type = 'income';
+          if (debitVal && parseFloat(String(debitVal).replace(/[^0-9.-]/g, '')) > 0) {
+            amount = parseFloat(String(debitVal).replace(/[^0-9.-]/g, ''));
+            type = 'expense';
+          } else if (creditVal && parseFloat(String(creditVal).replace(/[^0-9.-]/g, '')) > 0) {
+            amount = parseFloat(String(creditVal).replace(/[^0-9.-]/g, ''));
+            type = 'income';
+          } else {
+            return; // Skip if no amount in either column
           }
-          
-          // Force positive amount for state
-          amount = Math.abs(amount);
 
+          if (isNaN(amount)) return;
+          
           const dateStr = row[mapping.date] || new Date().toISOString().split('T')[0];
           // Try to normalize date to YYYY-MM-DD
           let normalizedDate = dateStr;
@@ -162,8 +162,15 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
               </select>
             </div>
             <div className="mapping-row">
-              <label>Amount</label>
-              <select value={mapping.amount} onChange={e => setMapping({...mapping, amount: e.target.value})}>
+              <label>Debit (Expense)</label>
+              <select value={mapping.debit} onChange={e => setMapping({...mapping, debit: e.target.value})}>
+                <option value="">Select Column...</option>
+                {headers.map(h => <option key={h} value={h}>{h}</option>)}
+              </select>
+            </div>
+            <div className="mapping-row">
+              <label>Credit (Income)</label>
+              <select value={mapping.credit} onChange={e => setMapping({...mapping, credit: e.target.value})}>
                 <option value="">Select Column...</option>
                 {headers.map(h => <option key={h} value={h}>{h}</option>)}
               </select>
@@ -172,13 +179,6 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
               <label>Date</label>
               <select value={mapping.date} onChange={e => setMapping({...mapping, date: e.target.value})}>
                 <option value="">Select Column...</option>
-                {headers.map(h => <option key={h} value={h}>{h}</option>)}
-              </select>
-            </div>
-            <div className="mapping-row">
-              <label>Type (Optional)</label>
-              <select value={mapping.type} onChange={e => setMapping({...mapping, type: e.target.value})}>
-                <option value="">Auto-detect by sign (+/-)</option>
                 {headers.map(h => <option key={h} value={h}>{h}</option>)}
               </select>
             </div>
@@ -196,7 +196,7 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
                   <tr key={i}>
                     <td>
                       {mapping.text ? row[mapping.text] : '...'} | 
-                      {mapping.amount ? ` ₹${row[mapping.amount]}` : '...'} | 
+                      {row[mapping.debit] ? ` -₹${row[mapping.debit]}` : (row[mapping.credit] ? ` +₹${row[mapping.credit]}` : '...')} | 
                       {mapping.date ? ` ${row[mapping.date]}` : '...'}
                     </td>
                   </tr>
@@ -209,7 +209,7 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
             <button className="btn-secondary" onClick={() => setStep(1)}>Back</button>
             <button 
               className="btn" 
-              disabled={!mapping.text || !mapping.amount || !mapping.date}
+              disabled={!mapping.text || (!mapping.debit && !mapping.credit) || !mapping.date}
               onClick={() => setStep(3)}
             >
               Continue
