@@ -21,8 +21,14 @@ export const AddTransaction = () => {
 
   const handleAddCategory = () => {
     if (newCategoryName.trim()) {
-      addCategory(newCategoryName.trim());
-      setCategory(newCategoryName.trim());
+      const cats = newCategoryName.split(',').map(c => c.trim()).filter(c => c.length > 0);
+      cats.forEach(cat => addCategory(cat));
+      
+      // Select the last added category
+      if (cats.length > 0) {
+        setCategory(cats[cats.length - 1]);
+      }
+      
       setNewCategoryName('');
       setIsAddingCategory(false);
     }
@@ -185,7 +191,7 @@ export const AddTransaction = () => {
                     type="text" 
                     value={newCategoryName} 
                     onChange={(e) => setNewCategoryName(e.target.value)}
-                    placeholder="New category name"
+                    placeholder="New category name (e.g. Travel, Food)"
                     autoFocus
                   />
                   <div className="new-cat-actions">
