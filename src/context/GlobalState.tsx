@@ -197,6 +197,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
       value={{
         transactions: state.transactions,
         plans: state.plans,
+        categories: state.categories,
         theme: state.theme,
         loading,
         deleteTransaction,
@@ -207,6 +208,8 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         settleTransaction,
         deletePlan,
         updatePlan,
+        addCategory,
+        deleteCategory,
         toggleTheme,
         importData,
       }}
