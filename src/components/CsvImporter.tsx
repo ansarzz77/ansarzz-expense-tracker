@@ -69,23 +69,34 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
     if (dmYMatch) {
       let [_, d, m, y] = dmYMatch;
       if (y.length === 2) y = "20" + y; // Assume 20xx
-      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      const result = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      console.log(`Normalizing ${cleanDate} (DMY) to ${result}`);
+      return result;
     }
 
     // Try YYYY/MM/DD or YYYY-MM-DD
     const YmDMatch = cleanDate.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
     if (YmDMatch) {
       let [_, y, m, d] = YmDMatch;
-      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      const result = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      console.log(`Normalizing ${cleanDate} (YMD) to ${result}`);
+      return result;
     }
 
     try {
       const d = new Date(cleanDate);
       if (!isNaN(d.getTime())) {
-        return d.toISOString().split('T')[0];
+        // Use local date parts to avoid UTC shift issues if any
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        const result = `${year}-${month}-${day}`;
+        console.log(`Normalizing ${cleanDate} (JS Date) to ${result}`);
+        return result;
       }
     } catch(e) {}
     
+    console.warn(`Could not normalize date: ${cleanDate}`);
     return cleanDate;
   };
 
