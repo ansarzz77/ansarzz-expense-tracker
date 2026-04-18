@@ -42,7 +42,13 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
               if (lower.includes('desc') || lower.includes('particulars') || lower.includes('remark')) guess.text = h;
               if (lower.includes('debit') || lower.includes('withdrawal') || lower.includes('out')) guess.debit = h;
               if (lower.includes('credit') || lower.includes('deposit') || lower.includes('in')) guess.credit = h;
-              if (lower.includes('date')) guess.date = h;
+              
+              // Prioritize 'settled', 'value' or 'post' date over just any 'date'
+              if (lower.includes('date')) {
+                if (!guess.date || lower.includes('settle') || lower.includes('value') || lower.includes('post')) {
+                  guess.date = h;
+                }
+              }
               if (lower.includes('cat')) guess.category = h;
             });
             setMapping(guess);
@@ -50,6 +56,37 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
         }
       });
     }
+  };
+
+  const normalizeDate = (dateStr: string) => {
+    if (!dateStr) return new Date().toISOString().split('T')[0];
+    
+    // Clean string (some banks add extra spaces or chars)
+    const cleanDate = dateStr.trim();
+
+    // Try DD/MM/YYYY or DD-MM-YYYY
+    const dmYMatch = cleanDate.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$/);
+    if (dmYMatch) {
+      let [_, d, m, y] = dmYMatch;
+      if (y.length === 2) y = "20" + y; // Assume 20xx
+      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+
+    // Try YYYY/MM/DD or YYYY-MM-DD
+    const YmDMatch = cleanDate.match(/^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$/);
+    if (YmDMatch) {
+      let [_, y, m, d] = YmDMatch;
+      return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+    }
+
+    try {
+      const d = new Date(cleanDate);
+      if (!isNaN(d.getTime())) {
+        return d.toISOString().split('T')[0];
+      }
+    } catch(e) {}
+    
+    return cleanDate;
   };
 
   const handleImport = () => {
@@ -81,16 +118,7 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
 
           if (isNaN(amount)) return;
           
-          const dateStr = row[mapping.date] || new Date().toISOString().split('T')[0];
-          // Try to normalize date to YYYY-MM-DD
-          let normalizedDate = dateStr;
-          try {
-            const d = new Date(dateStr);
-            if (!isNaN(d.getTime())) {
-              normalizedDate = d.toISOString().split('T')[0];
-            }
-          } catch(e) {}
-
+          const normalizedDate = normalizeDate(row[mapping.date]);
           const description = row[mapping.text] || 'Imported Transaction';
 
           let finalCategory = autoCategorize(description);
