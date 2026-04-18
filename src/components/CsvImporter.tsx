@@ -2,6 +2,7 @@ import { useState, useContext, useRef } from 'react';
 import Papa from 'papaparse';
 import { GlobalContext } from '../context/GlobalContext';
 import { motion } from 'framer-motion';
+import { autoCategorize } from '../utils/categorizer';
 
 interface Mapping {
   text: string;
@@ -88,11 +89,13 @@ export const CsvImporter = ({ onCancel }: { onCancel: () => void }) => {
             }
           } catch(e) {}
 
+          const description = row[mapping.text] || 'Imported Transaction';
+
           addTransaction({
             id: Math.floor(Math.random() * 1000000000),
-            text: row[mapping.text] || 'Imported Transaction',
+            text: description,
             amount: amount,
-            category: 'General',
+            category: autoCategorize(description),
             type: type,
             dueDate: normalizedDate,
             status: 'completed',
