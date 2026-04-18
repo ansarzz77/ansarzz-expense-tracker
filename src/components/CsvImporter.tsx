@@ -1,7 +1,7 @@
 import { useState, useContext, useRef } from 'react';
 import Papa from 'papaparse';
 import { GlobalContext } from '../context/GlobalContext';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface Mapping {
   text: string;
