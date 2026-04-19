@@ -20,61 +20,85 @@ interface CategorySummary {
 export const SpendDistribution = () => {
   const { transactions } = useContext(GlobalContext);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [view, setView] = useState<'donut' | 'bar'>('bar');
 
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
 
-  const expenseTransactions = useMemo(() => 
-    transactions.filter((t: Transaction) => t.type === 'expense' && t.status === 'completed'),
+  const relevantTransactions = useMemo(() => 
+    transactions.filter((t: Transaction) => t.status === 'completed'),
     [transactions]
   );
 
   const categoryData = useMemo(() => {
     // 1. Calculate Current Month Totals
-    const currentMonthTotals: Record<string, number> = {};
-    let grandTotal = 0;
+    const currentMonthNet: Record<string, number> = {};
+    let grandTotalExpense = 0;
 
-    const currentMonthExpenses = expenseTransactions.filter(t => {
+    const currentMonthTransactions = relevantTransactions.filter(t => {
       const dateStr = t.paidDate || t.dueDate;
       const [y, m] = dateStr.split('-').map(Number);
       return (m - 1) === currentMonth && y === currentYear;
     });
 
-    currentMonthExpenses.forEach((t: Transaction) => {
-      const amount = Math.abs(t.amount);
-      currentMonthTotals[t.category] = (currentMonthTotals[t.category] || 0) + amount;
-      grandTotal += amount;
+    currentMonthTransactions.forEach((t: Transaction) => {
+      const amount = t.type === 'expense' ? t.amount : -t.amount;
+      currentMonthNet[t.category] = (currentMonthNet[t.category] || 0) + amount;
     });
 
-    // 2. Calculate Rolling 3-Month Average (Previous 3 calendar months)
-    const rollingTotals: Record<string, number> = {};
+    // Only consider categories with net positive expense for the "Spend" distribution
+    const spendCategories = Object.entries(currentMonthNet)
+      .filter(([_, net]) => net > 0);
+    
+    grandTotalExpense = spendCategories.reduce((acc, [_, net]) => acc + net, 0);
+
+    // 2. Calculate Rolling 3-Month Average
+    const rollingNet: Record<string, number> = {};
     const prevMonths: { m: number; y: number }[] = [];
     for (let i = 1; i <= 3; i++) {
       const d = new Date(currentYear, currentMonth - i, 1);
       prevMonths.push({ m: d.getMonth(), y: d.getFullYear() });
     }
 
-    const historicalExpenses = expenseTransactions.filter(t => {
+    const historicalTransactions = relevantTransactions.filter(t => {
       const dateStr = t.paidDate || t.dueDate;
       const [y, m] = dateStr.split('-').map(Number);
       return prevMonths.some(pm => pm.m === (m - 1) && pm.y === y);
     });
 
-    historicalExpenses.forEach((t: Transaction) => {
-      const amount = Math.abs(t.amount);
-      rollingTotals[t.category] = (rollingTotals[t.category] || 0) + amount;
+    historicalTransactions.forEach((t: Transaction) => {
+      const amount = t.type === 'expense' ? t.amount : -t.amount;
+      rollingNet[t.category] = (rollingNet[t.category] || 0) + amount;
     });
 
     const summaries: CategorySummary[] = [];
     let currentAngle = 0;
 
-    Object.entries(currentMonthTotals)
-      .sort((a, b) => b[1] - a[1]) // Sort by amount descending
-      .forEach(([category, amount], index) => {
-        const percentage = grandTotal > 0 ? (amount / grandTotal) : 0;
+    // Grouping logic for "Others" if too many categories
+    const sortedSpend = spendCategories.sort((a, b) => b[1] - a[1]);
+    const threshold = grandTotalExpense * 0.03; // 3% threshold for "Others"
+    
+    const topCategories = sortedSpend.filter(([_, amt]) => amt >= threshold);
+    const otherCategories = sortedSpend.filter(([_, amt]) => amt < threshold);
+
+    const processedCategories = [...topCategories];
+    if (otherCategories.length > 0) {
+      const othersTotal = otherCategories.reduce((acc, [_, amt]) => acc + amt, 0);
+      processedCategories.push(['Others', othersTotal]);
+    }
+
+    processedCategories.forEach(([category, amount], index) => {
+        const percentage = grandTotalExpense > 0 ? (amount / grandTotalExpense) : 0;
         const angleSize = percentage * 360;
         
+        let avg = 0;
+        if (category === 'Others') {
+          avg = otherCategories.reduce((acc, [name]) => acc + (rollingNet[name] || 0), 0) / 3;
+        } else {
+          avg = (rollingNet[category] || 0) / 3;
+        }
+
         summaries.push({
           category,
           amount,
@@ -82,14 +106,19 @@ export const SpendDistribution = () => {
           percentage: percentage * 100,
           startAngle: currentAngle,
           endAngle: currentAngle + angleSize,
-          rollingAverage: (rollingTotals[category] || 0) / 3
+          rollingAverage: Math.max(0, avg)
         });
         
         currentAngle += angleSize;
       });
 
-    return { summaries, grandTotal, currentMonthExpenses };
-  }, [expenseTransactions, currentMonth, currentYear]);
+    return { 
+      summaries, 
+      grandTotal: grandTotalExpense, 
+      currentMonthTransactions,
+      otherCategoryNames: otherCategories.map(([name]) => name)
+    };
+  }, [relevantTransactions, currentMonth, currentYear]);
 
   // SVG Helper: Convert polar coordinates to Cartesian
   const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -128,9 +157,17 @@ export const SpendDistribution = () => {
     setSelectedCategory(prev => prev === category ? null : category);
   };
 
-  const selectedTransactions = selectedCategory 
-    ? categoryData.currentMonthExpenses.filter((t: Transaction) => t.category === selectedCategory)
-    : [];
+  const selectedTransactions = useMemo(() => {
+    if (!selectedCategory) return [];
+    if (selectedCategory === 'Others') {
+      return categoryData.currentMonthTransactions.filter(
+        (t: Transaction) => categoryData.otherCategoryNames.includes(t.category)
+      );
+    }
+    return categoryData.currentMonthTransactions.filter(
+      (t: Transaction) => t.category === selectedCategory
+    );
+  }, [selectedCategory, categoryData]);
 
   const renderBenchmark = (summary: CategorySummary) => {
     if (summary.rollingAverage === 0) return <span className="benchmark-label new">New</span>;
@@ -156,32 +193,71 @@ export const SpendDistribution = () => {
 
   return (
     <div className="spend-distribution-container card">
-      <h3>Spend Distribution</h3>
+      <div className="section-header">
+        <h3>Spend Distribution</h3>
+        <div className="view-toggle">
+          <button 
+            className={`toggle-btn ${view === 'bar' ? 'active' : ''}`} 
+            onClick={() => setView('bar')}
+          >
+            📊 Bar
+          </button>
+          <button 
+            className={`toggle-btn ${view === 'donut' ? 'active' : ''}`} 
+            onClick={() => setView('donut')}
+          >
+            ⭕ Donut
+          </button>
+        </div>
+      </div>
       
-      <div className="chart-layout">
-        <div className="donut-chart-wrapper">
-          <svg viewBox="0 0 100 100" className="donut-chart">
+      <div className={`chart-layout ${view}-view`}>
+        {view === 'donut' ? (
+          <div className="donut-chart-wrapper">
+            <svg viewBox="0 0 100 100" className="donut-chart">
+              {categoryData.summaries.map((s) => (
+                <path
+                  key={s.category}
+                  d={describeArc(50, 50, 45, s.startAngle, s.endAngle)}
+                  fill={s.color}
+                  className={`chart-slice ${selectedCategory === s.category ? 'active' : ''}`}
+                  onClick={() => handleSliceClick(s.category)}
+                >
+                  <title>{`${s.category}: ₹${s.amount.toFixed(2)} (${s.percentage.toFixed(1)}%)`}</title>
+                </path>
+              ))}
+              {/* Inner circle for the donut effect */}
+              <circle cx="50" cy="50" r="25" fill="var(--card-bg)" />
+              <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" className="chart-center-text">
+                Total
+                <tspan x="50" dy="1.2em" fontWeight="bold">
+                  ₹{categoryData.grandTotal.toFixed(0)}
+                </tspan>
+              </text>
+            </svg>
+          </div>
+        ) : (
+          <div className="bar-chart-wrapper">
             {categoryData.summaries.map((s) => (
-              <path
-                key={s.category}
-                d={describeArc(50, 50, 45, s.startAngle, s.endAngle)}
-                fill={s.color}
-                className={`chart-slice ${selectedCategory === s.category ? 'active' : ''}`}
+              <div 
+                key={s.category} 
+                className={`bar-item ${selectedCategory === s.category ? 'active' : ''}`}
                 onClick={() => handleSliceClick(s.category)}
               >
-                <title>{`${s.category}: ₹${s.amount.toFixed(2)} (${s.percentage.toFixed(1)}%)`}</title>
-              </path>
+                <div className="bar-label-group">
+                  <span className="bar-label">{s.category}</span>
+                  <span className="bar-value">₹{s.amount.toFixed(0)} ({s.percentage.toFixed(0)}%)</span>
+                </div>
+                <div className="bar-track">
+                  <div 
+                    className="bar-fill" 
+                    style={{ width: `${s.percentage}%`, backgroundColor: s.color }}
+                  ></div>
+                </div>
+              </div>
             ))}
-            {/* Inner circle for the donut effect */}
-            <circle cx="50" cy="50" r="25" fill="var(--card-bg)" />
-            <text x="50" y="50" textAnchor="middle" dominantBaseline="middle" className="chart-center-text">
-              Total
-              <tspan x="50" dy="1.2em" fontWeight="bold">
-                ₹{categoryData.grandTotal.toFixed(0)}
-              </tspan>
-            </text>
-          </svg>
-        </div>
+          </div>
+        )}
 
         <div className="chart-legend">
           {categoryData.summaries.map(s => (
@@ -211,9 +287,11 @@ export const SpendDistribution = () => {
               <li key={t.id} className="details-item">
                 <div className="details-text">
                   <span>{t.text}</span>
-                  <small>{t.paidDate || t.dueDate}</small>
+                  <small>{t.paidDate || t.dueDate} ({t.category})</small>
                 </div>
-                <span className="details-amount">-₹{Math.abs(t.amount).toFixed(2)}</span>
+                <span className={`details-amount ${t.type === 'income' ? 'plus' : ''}`}>
+                  {t.type === 'income' ? '+' : '-'}₹{Math.abs(t.amount).toFixed(2)}
+                </span>
               </li>
             ))}
           </ul>
