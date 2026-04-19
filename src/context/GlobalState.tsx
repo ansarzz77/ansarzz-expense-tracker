@@ -1,5 +1,5 @@
 import { useReducer, useEffect, useState, type ReactNode } from 'react';
-import AppReducer, { type State, type Transaction, type RecurringPlan } from './AppReducer';
+import AppReducer, { type State, type Transaction, type RecurringPlan, type Bucket } from './AppReducer';
 import { supabase } from '../supabaseClient';
 import { GlobalContext } from './GlobalContext';
 
@@ -15,6 +15,7 @@ const initialState: State = {
   transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
   plans: JSON.parse(localStorage.getItem('plans') || '[]'),
   categories: JSON.parse(localStorage.getItem('categories') || JSON.stringify(SEED_CATEGORIES)),
+  buckets: JSON.parse(localStorage.getItem('buckets') || '[]'),
   theme: (localStorage.getItem('theme') as 'light' | 'dark') || 
          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
 };
@@ -57,6 +58,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
     localStorage.setItem('transactions', JSON.stringify(state.transactions));
     localStorage.setItem('plans', JSON.stringify(state.plans));
     localStorage.setItem('categories', JSON.stringify(state.categories));
+    localStorage.setItem('buckets', JSON.stringify(state.buckets));
     localStorage.setItem('theme', state.theme);
 
     const syncToCloud = async () => {
@@ -70,6 +72,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
             transactions: state.transactions, 
             plans: state.plans,
             categories: state.categories,
+            buckets: state.buckets,
             theme: state.theme
           },
           updated_at: new Date()
@@ -78,7 +81,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
 
     const timeoutId = setTimeout(syncToCloud, 2000); // Debounce sync by 2 seconds
     return () => clearTimeout(timeoutId);
-  }, [state.transactions, state.plans, state.categories, state.theme]);
+  }, [state.transactions, state.plans, state.categories, state.buckets, state.theme]);
 
   // Actions
   function toggleTheme() {
@@ -111,6 +114,18 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
 
   function deleteCategory(category: string) {
     dispatch({ type: 'DELETE_CATEGORY', payload: category });
+  }
+
+  function addBucket(bucket: Bucket) {
+    dispatch({ type: 'ADD_BUCKET', payload: bucket });
+  }
+
+  function updateBucket(bucket: Bucket) {
+    dispatch({ type: 'UPDATE_BUCKET', payload: bucket });
+  }
+
+  function deleteBucket(id: number) {
+    dispatch({ type: 'DELETE_BUCKET', payload: id });
   }
 
   function addRecurringPlan(plan: RecurringPlan) {
@@ -198,6 +213,7 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         transactions: state.transactions,
         plans: state.plans,
         categories: state.categories,
+        buckets: state.buckets,
         theme: state.theme,
         loading,
         deleteTransaction,
@@ -210,6 +226,9 @@ export const GlobalProvider = ({ children }: { children: ReactNode }) => {
         updatePlan,
         addCategory,
         deleteCategory,
+        addBucket,
+        updateBucket,
+        deleteBucket,
         toggleTheme,
         importData,
       }}

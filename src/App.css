@@ -1252,3 +1252,222 @@ h3 {
 .details-amount.plus {
   color: var(--income-color);
 }
+
+/* Financial Wellness Styles */
+.wellness-container {
+  background: var(--glass-gradient);
+  background-color: var(--card-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border: 1px solid var(--glass-border);
+  padding: 1.5rem;
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
+  margin-bottom: 2rem;
+}
+
+.wellness-grid {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.streak-badge {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  padding: 4px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.streak-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #c53030;
+}
+
+.health-score-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+}
+
+.score-circle-wrapper {
+  width: 100px;
+  height: 100px;
+}
+
+.circular-chart {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.circle-bg {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.05);
+  stroke-width: 3.8;
+}
+
+.circle {
+  fill: none;
+  stroke-width: 2.8;
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.6s ease;
+}
+
+.percentage {
+  font-family: inherit;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-anchor: middle;
+}
+
+.score-info h4 {
+  margin: 10px 0 5px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.score-status {
+  font-weight: 800;
+  font-size: 1.1rem;
+}
+
+.buckets-section {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.buckets-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.buckets-header h4 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.btn-add-small {
+  background: var(--primary-color);
+  color: white;
+  border: 0;
+  padding: 4px 12px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.bucket-form {
+  background: rgba(255, 255, 255, 0.4);
+  padding: 15px;
+  border-radius: 16px;
+  border: 1px solid var(--primary-color);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bucket-form input {
+  background: white !important;
+  padding: 8px 12px !important;
+  border-radius: 10px !important;
+}
+
+.buckets-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bucket-item {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.bucket-info {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.bucket-name {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.bucket-values {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.bucket-progress-bar {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.bucket-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+}
+
+.bucket-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.bucket-actions button {
+  background: white;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--primary-color);
+}
+
+.bucket-actions button:hover {
+  background: var(--primary-color);
+  color: white;
+}
+
+.delete-bucket {
+  margin-left: auto;
+  color: var(--expense-color) !important;
+  font-size: 1rem !important;
+  padding: 0 5px !important;
+}
+
+.empty-buckets {
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  font-size: 0.85rem;
+  padding: 10px;
+}
+
+@media (max-width: 600px) {
+  .wellness-grid {
+    grid-template-columns: 1fr;
+  }
+}

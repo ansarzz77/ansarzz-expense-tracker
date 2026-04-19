@@ -14,6 +14,7 @@ export const AddTransaction = () => {
   const [category, setCategory] = useState('General');
   const [type, setType] = useState<'income' | 'expense'>('expense');
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [showDate, setShowDate] = useState(false);
   const [frequency, setFrequency] = useState<'one-time' | 'monthly' | 'quarterly' | 'half-yearly' | 'yearly'>('one-time');
   const [note, setNote] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
@@ -77,6 +78,8 @@ export const AddTransaction = () => {
     setText('');
     setAmount('0');
     setNote('');
+    setShowDate(false);
+    setDate(new Date().toISOString().split('T')[0]);
   };
 
   const handleQuickAmount = (val: number) => {
@@ -180,6 +183,20 @@ export const AddTransaction = () => {
                   ))}
                   <button type="button" className="chip-btn clear" onClick={() => setAmount('0')}>Clear</button>
                 </div>
+
+                <div className="quick-chips-label" style={{ marginTop: '10px' }}>Options:</div>
+                <div className="quick-chips">
+                  <button 
+                    type="button" 
+                    className={`chip-btn ${showDate ? 'active' : ''}`}
+                    onClick={() => {
+                      if (showDate) setDate(new Date().toISOString().split('T')[0]);
+                      setShowDate(!showDate);
+                    }}
+                  >
+                    📅 {showDate ? 'Use Today' : 'Change Date'}
+                  </button>
+                </div>
               </motion.div>
             )}
 
@@ -229,7 +246,7 @@ export const AddTransaction = () => {
             </div>
 
             <AnimatePresence>
-              {activeTab === 'planned' && (
+              {(activeTab === 'planned' || (activeTab === 'quick' && showDate)) && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
                   animate={{ height: 'auto', opacity: 1 }}
@@ -237,20 +254,29 @@ export const AddTransaction = () => {
                   style={{ overflow: 'hidden' }}
                 >
                   <div className="form-row">
-                    <div className="form-control">
-                      <label htmlFor="frequency">Frequency</label>
-                      <select value={frequency} onChange={(e) => setFrequency(e.target.value as any)}>
-                        <option value="one-time">One-time</option>
-                        <option value="monthly">Monthly</option>
-                        <option value="quarterly">Quarterly</option>
-                        <option value="half-yearly">Half-yearly</option>
-                        <option value="yearly">Yearly</option>
-                      </select>
-                    </div>
-                    <div className="form-control">
-                      <label htmlFor="date">Start Date</label>
-                      <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
-                    </div>
+                    {activeTab === 'planned' ? (
+                      <>
+                        <div className="form-control">
+                          <label htmlFor="frequency">Frequency</label>
+                          <select value={frequency} onChange={(e) => setFrequency(e.target.value as any)}>
+                            <option value="one-time">One-time</option>
+                            <option value="monthly">Monthly</option>
+                            <option value="quarterly">Quarterly</option>
+                            <option value="half-yearly">Half-yearly</option>
+                            <option value="yearly">Yearly</option>
+                          </select>
+                        </div>
+                        <div className="form-control">
+                          <label htmlFor="date">Start Date</label>
+                          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+                        </div>
+                      </>
+                    ) : (
+                      <div className="form-control">
+                        <label htmlFor="date">Transaction Date</label>
+                        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required />
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               )}

@@ -22,6 +22,14 @@ export interface RecurringPlan {
   note: string;
 }
 
+export interface Bucket {
+  id: number;
+  name: string;
+  target: number;
+  saved: number;
+  icon?: string;
+}
+
 export type Action =
   | { type: 'DELETE_TRANSACTION'; payload: number }
   | { type: 'ADD_TRANSACTION'; payload: Transaction }
@@ -34,12 +42,16 @@ export type Action =
   | { type: 'ADD_CATEGORY'; payload: string }
   | { type: 'DELETE_CATEGORY'; payload: string }
   | { type: 'TOGGLE_THEME' }
-  | { type: 'IMPORT_DATA'; payload: State };
+  | { type: 'IMPORT_DATA'; payload: State }
+  | { type: 'ADD_BUCKET'; payload: Bucket }
+  | { type: 'UPDATE_BUCKET'; payload: Bucket }
+  | { type: 'DELETE_BUCKET'; payload: number };
 
 export interface State {
   transactions: Transaction[];
   plans: RecurringPlan[];
   categories: string[];
+  buckets: Bucket[];
   theme: 'light' | 'dark';
 }
 
@@ -51,7 +63,23 @@ const AppReducer = (state: State, action: Action): State => {
         transactions: action.payload.transactions || [],
         plans: action.payload.plans || [],
         categories: action.payload.categories || state.categories,
+        buckets: action.payload.buckets || [],
         theme: action.payload.theme || state.theme,
+      };
+    case 'ADD_BUCKET':
+      return {
+        ...state,
+        buckets: [...state.buckets, action.payload]
+      };
+    case 'UPDATE_BUCKET':
+      return {
+        ...state,
+        buckets: state.buckets.map(b => b.id === action.payload.id ? action.payload : b)
+      };
+    case 'DELETE_BUCKET':
+      return {
+        ...state,
+        buckets: state.buckets.filter(b => b.id !== action.payload)
       };
     case 'ADD_CATEGORY':
       if (state.categories.includes(action.payload)) return state;

@@ -2,6 +2,7 @@ import { Header } from './components/Header';
 import { Balance } from './components/Balance';
 import { IncomeExpenses } from './components/IncomeExpenses';
 import { SpendDistribution } from './components/SpendDistribution';
+import { FinancialWellness } from './components/FinancialWellness';
 import { TransactionList } from './components/TransactionList';
 import { PendingTransactions } from './components/PendingTransactions';
 import { FutureProjections } from './components/FutureProjections';
@@ -108,6 +109,7 @@ const AppContent = () => {
       >
         <motion.div variants={itemVariants}><Balance /></motion.div>
         <motion.div variants={itemVariants}><IncomeExpenses /></motion.div>
+        <motion.div variants={itemVariants}><FinancialWellness /></motion.div>
         <motion.div variants={itemVariants}><SpendDistribution /></motion.div>
         <motion.div variants={itemVariants}><PendingTransactions /></motion.div>
         <motion.div variants={itemVariants}><FutureProjections /></motion.div>
