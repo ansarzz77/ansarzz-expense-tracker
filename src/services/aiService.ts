@@ -17,10 +17,7 @@ export const parseNaturalLanguageTransaction = async (
   input: string, 
   categories: string[]
 ): Promise<ParsedTransaction | null> => {
-  if (!API_KEY) {
-    console.error("Gemini API Key is missing! Please set VITE_GEMINI_API_KEY in your .env or GitHub Secrets.");
-    return null;
-  }
+  if (!API_KEY) return null;
 
   const today = new Date().toISOString().split('T')[0];
   const prompt = `
@@ -54,30 +51,16 @@ export const parseNaturalLanguageTransaction = async (
   `;
 
   try {
-    if (!model) {
-      console.error("Gemini Model failed to initialize. Check if API_KEY is valid.");
-      return null;
-    }
-    
+    if (!model) return null;
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     
-    console.log("AI Raw Response:", text);
-    
     // Extract JSON from markdown if present
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (jsonMatch) {
-      try {
-        const parsed = JSON.parse(jsonMatch[0]);
-        console.log("AI Parsed Success:", parsed);
-        return parsed as ParsedTransaction;
-      } catch (parseErr) {
-        console.error("JSON Parse Error:", parseErr, "Content:", jsonMatch[0]);
-        return null;
-      }
+      return JSON.parse(jsonMatch[0]) as ParsedTransaction;
     }
-    console.warn("No JSON found in AI response.");
     return null;
   } catch (error: any) {
     console.error("Error parsing transaction with AI:", error);

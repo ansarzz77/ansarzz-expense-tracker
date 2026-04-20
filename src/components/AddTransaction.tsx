@@ -25,7 +25,6 @@ export const AddTransaction = () => {
   const [magicInput, setMagicInput] = useState('');
   const [isParsing, setIsParsing] = useState(false);
   const [isListening, setIsListening] = useState(false);
-  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   const startListening = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -42,7 +41,6 @@ export const AddTransaction = () => {
 
     recognition.onstart = () => {
       setIsListening(true);
-      setDebugInfo(null);
     };
 
     recognition.onresult = (event: any) => {
@@ -53,7 +51,6 @@ export const AddTransaction = () => {
 
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error", event.error);
-      setDebugInfo(`Mic Error: ${event.error}`);
       setIsListening(false);
     };
 
@@ -69,15 +66,6 @@ export const AddTransaction = () => {
     if (!magicInput.trim()) return;
 
     setIsParsing(true);
-    setDebugInfo(null);
-    
-    // Check key at runtime
-    const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      setIsParsing(false);
-      setDebugInfo("CRITICAL: VITE_GEMINI_API_KEY is missing in this build. Check GitHub Secrets.");
-      return;
-    }
     
     try {
       const parsed = await parseNaturalLanguageTransaction(magicInput, categories);
@@ -98,13 +86,12 @@ export const AddTransaction = () => {
         setMagicInput('');
         setActiveTab('quick');
       } else {
-        setDebugInfo("AI response was empty or invalid JSON. See console for details.");
+        alert("AI couldn't parse that. Try being more specific like 'Spent 500 on lunch today'.");
       }
     } catch (err: any) {
       setIsParsing(false);
-      const errMsg = err.message || JSON.stringify(err);
-      setDebugInfo(`Fetch Error: ${errMsg}`);
       console.error("Magic Submit Error:", err);
+      alert("AI parsing failed. Please try again.");
     }
   };
 
@@ -243,20 +230,6 @@ export const AddTransaction = () => {
                 required 
               />
               <p className="hint">Try: "Received 50000 salary yesterday" or "Movie at PVR for 800 last Sunday"</p>
-              
-              {debugInfo && (
-                <div style={{ 
-                  marginTop: '10px', 
-                  padding: '10px', 
-                  background: '#fff0f0', 
-                  color: '#d00', 
-                  borderRadius: '8px',
-                  fontSize: '0.8rem',
-                  border: '1px solid #fcc'
-                }}>
-                  <strong>Debug:</strong> {debugInfo}
-                </div>
-              )}
             </div>
             <button className="btn magic-btn" disabled={isParsing || isListening}>
               {isParsing ? 'AI is thinking...' : '✨ Add with AI'}
