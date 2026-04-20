@@ -2,7 +2,7 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
-const model = genAI ? genAI.getGenerativeModel({ model: "gemini-2.5-flash" }) : null;
+const model = genAI ? genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" }) : null;
 
 export interface ParsedTransaction {
   text: string;

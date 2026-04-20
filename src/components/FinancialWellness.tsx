@@ -103,11 +103,9 @@ export const FinancialWellness = () => {
   };
 
   useEffect(() => {
-    // Only fetch automatically on mount if we don't have an insight yet
-    if (transactions.length > 0 && !insight) {
-      fetchInsight();
-    }
-  }, []); // Run once on mount
+    // Disabled automatic fetch to preserve AI quota
+    // Users can click the refresh button manually
+  }, []);
 
   const handleAddBucket = (e: React.FormEvent) => {
     e.preventDefault();
