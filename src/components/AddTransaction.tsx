@@ -98,11 +98,12 @@ export const AddTransaction = () => {
         setMagicInput('');
         setActiveTab('quick');
       } else {
-        setDebugInfo("AI returned null. Check Console (F12) for 'AI Raw Response'.");
+        setDebugInfo("AI response was empty or invalid JSON. See console for details.");
       }
     } catch (err: any) {
       setIsParsing(false);
-      setDebugInfo(`Error: ${err.message || 'Unknown error'}`);
+      const errMsg = err.message || JSON.stringify(err);
+      setDebugInfo(`Fetch Error: ${errMsg}`);
       console.error("Magic Submit Error:", err);
     }
   };
