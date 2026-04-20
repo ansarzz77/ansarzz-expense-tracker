@@ -25,6 +25,7 @@ export const AddTransaction = () => {
   const [magicInput, setMagicInput] = useState('');
   const [isParsing, setIsParsing] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [debugInfo, setDebugInfo] = useState<string | null>(null);
 
   const startListening = () => {
     const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
@@ -35,12 +36,13 @@ export const AddTransaction = () => {
     }
 
     const recognition = new SpeechRecognition();
-    recognition.lang = 'en-IN'; // Set to Indian English or just 'en-US'
+    recognition.lang = 'en-IN';
     recognition.continuous = false;
     recognition.interimResults = false;
 
     recognition.onstart = () => {
       setIsListening(true);
+      setDebugInfo(null);
     };
 
     recognition.onresult = (event: any) => {
@@ -51,6 +53,7 @@ export const AddTransaction = () => {
 
     recognition.onerror = (event: any) => {
       console.error("Speech recognition error", event.error);
+      setDebugInfo(`Mic Error: ${event.error}`);
       setIsListening(false);
     };
 
@@ -66,25 +69,33 @@ export const AddTransaction = () => {
     if (!magicInput.trim()) return;
 
     setIsParsing(true);
-    const parsed = await parseNaturalLanguageTransaction(magicInput, categories);
-    setIsParsing(false);
+    setDebugInfo(null);
+    
+    try {
+      const parsed = await parseNaturalLanguageTransaction(magicInput, categories);
+      setIsParsing(false);
 
-    if (parsed) {
-      addTransaction({
-        id: Math.floor(Math.random() * 100000000),
-        text: parsed.text,
-        amount: parsed.amount,
-        category: parsed.category,
-        type: parsed.type,
-        dueDate: parsed.date,
-        status: 'completed',
-        note: parsed.note || '',
-        paidDate: parsed.date
-      });
-      setMagicInput('');
-      setActiveTab('quick');
-    } else {
-      alert("AI couldn't parse that. Try being more specific like 'Spent 500 on lunch today'.");
+      if (parsed) {
+        addTransaction({
+          id: Math.floor(Math.random() * 100000000),
+          text: parsed.text,
+          amount: parsed.amount,
+          category: parsed.category,
+          type: parsed.type,
+          dueDate: parsed.date,
+          status: 'completed',
+          note: parsed.note || '',
+          paidDate: parsed.date
+        });
+        setMagicInput('');
+        setActiveTab('quick');
+      } else {
+        setDebugInfo("AI returned null. Check Console (F12) for 'AI Raw Response'.");
+      }
+    } catch (err: any) {
+      setIsParsing(false);
+      setDebugInfo(`Error: ${err.message || 'Unknown error'}`);
+      console.error("Magic Submit Error:", err);
     }
   };
 
@@ -92,12 +103,9 @@ export const AddTransaction = () => {
     if (newCategoryName.trim()) {
       const cats = newCategoryName.split(',').map(c => c.trim()).filter(c => c.length > 0);
       cats.forEach(cat => addCategory(cat));
-      
-      // Select the last added category
       if (cats.length > 0) {
         setCategory(cats[cats.length - 1]);
       }
-      
       setNewCategoryName('');
       setIsAddingCategory(false);
     }
@@ -105,14 +113,11 @@ export const AddTransaction = () => {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     const numericAmount = parseFloat(amount);
-
     if (!text.trim()) {
       alert('Please add a description');
       return;
     }
-
     if (isNaN(numericAmount) || numericAmount <= 0) {
       alert('Please enter a valid amount greater than 0');
       return;
@@ -229,6 +234,20 @@ export const AddTransaction = () => {
                 required 
               />
               <p className="hint">Try: "Received 50000 salary yesterday" or "Movie at PVR for 800 last Sunday"</p>
+              
+              {debugInfo && (
+                <div style={{ 
+                  marginTop: '10px', 
+                  padding: '10px', 
+                  background: '#fff0f0', 
+                  color: '#d00', 
+                  borderRadius: '8px',
+                  fontSize: '0.8rem',
+                  border: '1px solid #fcc'
+                }}>
+                  <strong>Debug:</strong> {debugInfo}
+                </div>
+              )}
             </div>
             <button className="btn magic-btn" disabled={isParsing || isListening}>
               {isParsing ? 'AI is thinking...' : '✨ Add with AI'}
