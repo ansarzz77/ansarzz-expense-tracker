@@ -71,6 +71,14 @@ export const AddTransaction = () => {
     setIsParsing(true);
     setDebugInfo(null);
     
+    // Check key at runtime
+    const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      setIsParsing(false);
+      setDebugInfo("CRITICAL: VITE_GEMINI_API_KEY is missing in this build. Check GitHub Secrets.");
+      return;
+    }
+    
     try {
       const parsed = await parseNaturalLanguageTransaction(magicInput, categories);
       setIsParsing(false);
