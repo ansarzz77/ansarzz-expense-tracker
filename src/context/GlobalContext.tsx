@@ -1,5 +1,6 @@
 import { createContext } from 'react';
 import { type State, type Transaction, type RecurringPlan, type Bucket } from './AppReducer';
+import { safeJsonParse } from '../utils/storage';
 
 export interface GlobalContextProps extends State {
   loading: boolean;
@@ -21,10 +22,10 @@ export interface GlobalContextProps extends State {
 }
 
 const initialState: State = {
-  transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
-  plans: JSON.parse(localStorage.getItem('plans') || '[]'),
-  categories: JSON.parse(localStorage.getItem('categories') || '[]'),
-  buckets: JSON.parse(localStorage.getItem('buckets') || '[]'),
+  transactions: safeJsonParse('transactions', []),
+  plans: safeJsonParse('plans', []),
+  categories: safeJsonParse('categories', []),
+  buckets: safeJsonParse('buckets', []),
   theme: (localStorage.getItem('theme') as 'light' | 'dark') || 
          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
 };

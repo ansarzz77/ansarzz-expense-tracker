@@ -21,6 +21,7 @@ export const SpendDistribution = () => {
   const { transactions } = useContext(GlobalContext);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [view, setView] = useState<'donut' | 'bar'>('bar');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const now = new Date();
   const currentMonth = now.getMonth();
@@ -75,29 +76,15 @@ export const SpendDistribution = () => {
     const summaries: CategorySummary[] = [];
     let currentAngle = 0;
 
-    // Grouping logic for "Others" if too many categories
+    // Sort by amount descending
     const sortedSpend = spendCategories.sort((a, b) => b[1] - a[1]);
-    const threshold = grandTotalExpense * 0.03; // 3% threshold for "Others"
     
-    const topCategories = sortedSpend.filter(([_, amt]) => amt >= threshold);
-    const otherCategories = sortedSpend.filter(([_, amt]) => amt < threshold);
-
-    const processedCategories = [...topCategories];
-    if (otherCategories.length > 0) {
-      const othersTotal = otherCategories.reduce((acc, [_, amt]) => acc + amt, 0);
-      processedCategories.push(['Others', othersTotal]);
-    }
-
-    processedCategories.forEach(([category, amount], index) => {
+    // No more "Others" clubbing, include everything but maybe slice for donut or provide full list
+    sortedSpend.forEach(([category, amount], index) => {
         const percentage = grandTotalExpense > 0 ? (amount / grandTotalExpense) : 0;
         const angleSize = percentage * 360;
         
-        let avg = 0;
-        if (category === 'Others') {
-          avg = otherCategories.reduce((acc, [name]) => acc + (rollingNet[name] || 0), 0) / 3;
-        } else {
-          avg = (rollingNet[category] || 0) / 3;
-        }
+        const avg = (rollingNet[category] || 0) / 3;
 
         summaries.push({
           category,
@@ -115,10 +102,21 @@ export const SpendDistribution = () => {
     return { 
       summaries, 
       grandTotal: grandTotalExpense, 
-      currentMonthTransactions,
-      otherCategoryNames: otherCategories.map(([name]) => name)
+      currentMonthTransactions
     };
   }, [relevantTransactions, currentMonth, currentYear]);
+
+  const filteredSummaries = useMemo(() => {
+    if (!searchQuery.trim()) return categoryData.summaries;
+    return categoryData.summaries.filter(s => 
+      s.category.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [categoryData.summaries, searchQuery]);
+
+  const searchSummaryTotal = useMemo(() => {
+    return filteredSummaries.reduce((acc, s) => acc + s.amount, 0);
+  }, [filteredSummaries]);
+
 
   // SVG Helper: Convert polar coordinates to Cartesian
   const polarToCartesian = (centerX: number, centerY: number, radius: number, angleInDegrees: number) => {
@@ -159,11 +157,6 @@ export const SpendDistribution = () => {
 
   const selectedTransactions = useMemo(() => {
     if (!selectedCategory) return [];
-    if (selectedCategory === 'Others') {
-      return categoryData.currentMonthTransactions.filter(
-        (t: Transaction) => categoryData.otherCategoryNames.includes(t.category)
-      );
-    }
     return categoryData.currentMonthTransactions.filter(
       (t: Transaction) => t.category === selectedCategory
     );
@@ -210,6 +203,44 @@ export const SpendDistribution = () => {
           </button>
         </div>
       </div>
+
+      <div className="spend-summary-header" style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        background: 'var(--interactive-bg)',
+        padding: '12px 15px',
+        borderRadius: '16px',
+        marginBottom: '15px'
+      }}>
+        <div className="summary-item">
+          <small style={{ display: 'block', fontSize: '0.75rem', opacity: 0.7 }}>Total Monthly Spend</small>
+          <span style={{ fontWeight: 700, fontSize: '1.1rem' }}>₹{categoryData.grandTotal.toLocaleString()}</span>
+        </div>
+        <div className="summary-item" style={{ textAlign: 'right' }}>
+          <small style={{ display: 'block', fontSize: '0.75rem', opacity: 0.7 }}>{searchQuery ? 'Filtered Sum' : 'Top Category'}</small>
+          <span style={{ fontWeight: 700, fontSize: '1.1rem', color: 'var(--primary-color)' }}>
+            ₹{searchQuery ? searchSummaryTotal.toLocaleString() : (categoryData.summaries[0]?.amount.toLocaleString() || 0)}
+          </span>
+        </div>
+      </div>
+
+      <div className="search-box" style={{ marginBottom: '15px' }}>
+        <input 
+          type="text" 
+          placeholder="🔍 Search categories (e.g. food, rent...)" 
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          style={{ 
+            width: '100%', 
+            padding: '10px 15px', 
+            borderRadius: '12px',
+            border: '1px solid var(--glass-border)',
+            background: 'var(--card-bg)',
+            fontSize: '0.9rem'
+          }}
+        />
+      </div>
       
       <div className={`chart-layout ${view}-view`}>
         {view === 'donut' ? (
@@ -220,8 +251,9 @@ export const SpendDistribution = () => {
                   key={s.category}
                   d={describeArc(50, 50, 45, s.startAngle, s.endAngle)}
                   fill={s.color}
-                  className={`chart-slice ${selectedCategory === s.category ? 'active' : ''}`}
+                  className={`chart-slice ${selectedCategory === s.category ? 'active' : ''} ${searchQuery && !s.category.toLowerCase().includes(searchQuery.toLowerCase()) ? 'dimmed' : ''}`}
                   onClick={() => handleSliceClick(s.category)}
+                  style={{ opacity: searchQuery && !s.category.toLowerCase().includes(searchQuery.toLowerCase()) ? 0.2 : 1 }}
                 >
                   <title>{`${s.category}: ₹${s.amount.toFixed(2)} (${s.percentage.toFixed(1)}%)`}</title>
                 </path>
@@ -237,8 +269,8 @@ export const SpendDistribution = () => {
             </svg>
           </div>
         ) : (
-          <div className="bar-chart-wrapper">
-            {categoryData.summaries.map((s) => (
+          <div className="bar-chart-wrapper" style={{ maxHeight: '300px', overflowY: 'auto', paddingRight: '5px' }}>
+            {filteredSummaries.map((s) => (
               <div 
                 key={s.category} 
                 className={`bar-item ${selectedCategory === s.category ? 'active' : ''}`}
@@ -256,11 +288,12 @@ export const SpendDistribution = () => {
                 </div>
               </div>
             ))}
+            {filteredSummaries.length === 0 && <p style={{ textAlign: 'center', padding: '20px', opacity: 0.6 }}>No categories match your search.</p>}
           </div>
         )}
 
-        <div className="chart-legend">
-          {categoryData.summaries.map(s => (
+        <div className="chart-legend" style={{ maxHeight: '250px', overflowY: 'auto' }}>
+          {filteredSummaries.map(s => (
             <div 
               key={s.category} 
               className={`legend-item ${selectedCategory === s.category ? 'active' : ''}`}
@@ -278,6 +311,7 @@ export const SpendDistribution = () => {
           ))}
         </div>
       </div>
+
 
       {selectedCategory && (
         <div className="category-details expandable-section">

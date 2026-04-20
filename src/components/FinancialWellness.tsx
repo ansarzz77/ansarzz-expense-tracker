@@ -1,12 +1,17 @@
-import { useContext, useState, useMemo } from 'react';
+import { useContext, useState, useMemo, useEffect } from 'react';
 import { GlobalContext } from '../context/GlobalContext';
 import { motion, AnimatePresence } from 'framer-motion';
+import { getFinancialInsights } from '../services/aiService';
 
 export const FinancialWellness = () => {
   const { transactions, buckets, addBucket, updateBucket, deleteBucket } = useContext(GlobalContext);
   
   const [isAddingBucket, setIsAddingBucket] = useState(false);
   const [newBucket, setNewBucket] = useState({ name: '', target: '', saved: '' });
+  
+  // AI Insight State
+  const [insight, setInsight] = useState<string | null>(null);
+  const [isLoadingInsight, setIsLoadingInsight] = useState(false);
 
   // 1. Calculate No-Spend Streak
   const streak = useMemo(() => {
@@ -30,12 +35,10 @@ export const FinancialWellness = () => {
         currentStreak++;
         checkDate.setDate(checkDate.getDate() - 1);
       } else {
-        // If today has an expense, the streak is 0 unless it's the first check and we want to count yesterday?
-        // Let's say if today has an expense, streak is 0. If yesterday had no expense, streak starts from yesterday.
         break;
       }
       
-      if (currentStreak > 365) break; // Safety break
+      if (currentStreak > 365) break;
     }
 
     return currentStreak;
@@ -61,24 +64,20 @@ export const FinancialWellness = () => {
       .filter(t => t.type === 'expense' && t.status === 'completed')
       .reduce((acc, t) => acc + t.amount, 0);
 
-    // Savings Rate (40%)
     let savingsRateScore = 0;
     if (income > 0) {
       const rate = (income - expense) / income;
       savingsRateScore = Math.max(0, Math.min(1, rate)) * 40;
     }
 
-    // Bucket Progress (30%)
     let bucketScore = 0;
     if (buckets.length > 0) {
       const avgProgress = buckets.reduce((acc, b) => acc + (b.saved / b.target), 0) / buckets.length;
       bucketScore = Math.min(1, avgProgress) * 30;
     }
 
-    // Streak Bonus (20%) - 14 days for max bonus
     const streakScore = Math.min(1, streak / 14) * 20;
 
-    // Planning Consistency (10%)
     const monthPlans = transactions.filter(t => {
       if (!t.planId) return false;
       const [y, m] = t.dueDate.split('-').map(Number);
@@ -93,6 +92,20 @@ export const FinancialWellness = () => {
 
     return Math.round(savingsRateScore + bucketScore + streakScore + planningScore);
   }, [transactions, buckets, streak]);
+
+  // Fetch AI Insight
+  const fetchInsight = async () => {
+    setIsLoadingInsight(true);
+    const result = await getFinancialInsights(transactions, buckets, healthScore);
+    setInsight(result);
+    setIsLoadingInsight(false);
+  };
+
+  useEffect(() => {
+    if (transactions.length > 0) {
+      fetchInsight();
+    }
+  }, [healthScore]);
 
   const handleAddBucket = (e: React.FormEvent) => {
     e.preventDefault();
@@ -136,6 +149,37 @@ export const FinancialWellness = () => {
         <div className="streak-badge">
           <span className="streak-icon">🔥</span>
           <span className="streak-count">{streak} Day Streak</span>
+        </div>
+      </div>
+
+      <div className="ai-coach-section" style={{ 
+        background: 'var(--card-bg)', 
+        padding: '15px', 
+        borderRadius: '12px', 
+        marginBottom: '20px',
+        border: '1px solid var(--border-color)',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+      }}>
+        <div className="ai-coach-header" style={{ display: 'flex', alignItems: 'center', marginBottom: '10px' }}>
+          <span className="ai-icon" style={{ fontSize: '1.5rem', marginRight: '10px' }}>🤖</span>
+          <h4 style={{ margin: 0, flex: 1 }}>AI Financial Coach</h4>
+          <button 
+            className="refresh-btn" 
+            onClick={fetchInsight} 
+            disabled={isLoadingInsight}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem' }}
+          >
+            {isLoadingInsight ? '...' : '🔄'}
+          </button>
+        </div>
+        <div className="ai-insight" style={{ fontSize: '0.95rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
+          {insight ? (
+            <p style={{ margin: 0 }}>{insight}</p>
+          ) : (
+            <p className="placeholder" style={{ margin: 0, fontStyle: 'italic' }}>
+              {isLoadingInsight ? 'Analyzing your spending habits...' : 'Add more transactions to get personalized advice!'}
+            </p>
+          )}
         </div>
       </div>
 

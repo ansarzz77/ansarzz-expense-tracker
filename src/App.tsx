@@ -41,7 +41,16 @@ const itemVariants: Variants = {
 };
 
 const AppContent = () => {
-  const { loading, transactions, theme } = useContext(GlobalContext);
+  console.log("AppContent mounting...");
+  const context = useContext(GlobalContext);
+  
+  if (!context) {
+    console.error("GlobalContext is undefined!");
+    return <div style={{ color: 'red', padding: '20px' }}>Error: GlobalContext not found.</div>;
+  }
+
+  const { loading, transactions, theme } = context;
+  console.log("Context loaded, loading state:", loading);
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);

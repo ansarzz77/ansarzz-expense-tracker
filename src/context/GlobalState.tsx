@@ -2,6 +2,7 @@ import { useReducer, useEffect, useState, type ReactNode } from 'react';
 import AppReducer, { type State, type Transaction, type RecurringPlan, type Bucket } from './AppReducer';
 import { supabase } from '../supabaseClient';
 import { GlobalContext } from './GlobalContext';
+import { safeJsonParse } from '../utils/storage';
 
 export const SEED_CATEGORIES = [
   'General', 'Food', 'Rent', 'Salary', 'Entertainment', 'Transportation', 
@@ -12,10 +13,10 @@ export const SEED_CATEGORIES = [
 
 // Initial state
 const initialState: State = {
-  transactions: JSON.parse(localStorage.getItem('transactions') || '[]'),
-  plans: JSON.parse(localStorage.getItem('plans') || '[]'),
-  categories: JSON.parse(localStorage.getItem('categories') || JSON.stringify(SEED_CATEGORIES)),
-  buckets: JSON.parse(localStorage.getItem('buckets') || '[]'),
+  transactions: safeJsonParse('transactions', []),
+  plans: safeJsonParse('plans', []),
+  categories: safeJsonParse('categories', SEED_CATEGORIES),
+  buckets: safeJsonParse('buckets', []),
   theme: (localStorage.getItem('theme') as 'light' | 'dark') || 
          (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'),
 };

@@ -2,13 +2,14 @@ import { useState, useContext } from 'react';
 import { GlobalContext } from '../context/GlobalContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CsvImporter } from './CsvImporter';
+import { parseNaturalLanguageTransaction } from '../services/aiService';
 
 const QUICK_AMOUNTS = [10, 50, 100, 500, 1000];
 
 export const AddTransaction = () => {
   const { addRecurringPlan, addTransaction, categories, addCategory } = useContext(GlobalContext);
   
-  const [activeTab, setActiveTab] = useState<'quick' | 'planned' | 'import'>('quick');
+  const [activeTab, setActiveTab] = useState<'quick' | 'planned' | 'import' | 'magic'>('quick');
   const [text, setText] = useState('');
   const [amount, setAmount] = useState<string>('0');
   const [category, setCategory] = useState('General');
@@ -19,6 +20,73 @@ export const AddTransaction = () => {
   const [note, setNote] = useState('');
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState('');
+  
+  // Magic Tab State
+  const [magicInput, setMagicInput] = useState('');
+  const [isParsing, setIsParsing] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+
+  const startListening = () => {
+    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      alert("Your browser does not support speech recognition. Try Chrome or Edge.");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-IN'; // Set to Indian English or just 'en-US'
+    recognition.continuous = false;
+    recognition.interimResults = false;
+
+    recognition.onstart = () => {
+      setIsListening(true);
+    };
+
+    recognition.onresult = (event: any) => {
+      const transcript = event.results[0][0].transcript;
+      setMagicInput(prev => prev ? `${prev} ${transcript}` : transcript);
+      setIsListening(false);
+    };
+
+    recognition.onerror = (event: any) => {
+      console.error("Speech recognition error", event.error);
+      setIsListening(false);
+    };
+
+    recognition.onend = () => {
+      setIsListening(false);
+    };
+
+    recognition.start();
+  };
+
+  const handleMagicSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!magicInput.trim()) return;
+
+    setIsParsing(true);
+    const parsed = await parseNaturalLanguageTransaction(magicInput, categories);
+    setIsParsing(false);
+
+    if (parsed) {
+      addTransaction({
+        id: Math.floor(Math.random() * 100000000),
+        text: parsed.text,
+        amount: parsed.amount,
+        category: parsed.category,
+        type: parsed.type,
+        dueDate: parsed.date,
+        status: 'completed',
+        note: parsed.note || '',
+        paidDate: parsed.date
+      });
+      setMagicInput('');
+      setActiveTab('quick');
+    } else {
+      alert("AI couldn't parse that. Try being more specific like 'Spent 500 on lunch today'.");
+    }
+  };
 
   const handleAddCategory = () => {
     if (newCategoryName.trim()) {
@@ -91,6 +159,12 @@ export const AddTransaction = () => {
     <div className="add-transaction-card">
       <div className="tab-header">
         <button 
+          className={`tab-btn ${activeTab === 'magic' ? 'active' : ''}`}
+          onClick={() => setActiveTab('magic')}
+        >
+          ✨ Magic
+        </button>
+        <button 
           className={`tab-btn ${activeTab === 'quick' ? 'active' : ''}`}
           onClick={() => setActiveTab('quick')}
         >
@@ -113,6 +187,53 @@ export const AddTransaction = () => {
       <AnimatePresence mode="wait">
         {activeTab === 'import' ? (
           <CsvImporter key="importer" onCancel={() => setActiveTab('quick')} />
+        ) : activeTab === 'magic' ? (
+          <motion.form 
+            key="magic-form"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onSubmit={handleMagicSubmit}
+          >
+            <div className="form-control">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label htmlFor="magic">AI Transaction Parser</label>
+                <button 
+                  type="button" 
+                  className={`mic-btn ${isListening ? 'listening' : ''}`}
+                  onClick={startListening}
+                  title="Click to speak"
+                  style={{
+                    background: isListening ? 'var(--expense-color)' : 'var(--interactive-bg)',
+                    border: 'none',
+                    borderRadius: '50%',
+                    width: '36px',
+                    height: '36px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    fontSize: '1.2rem',
+                    transition: 'all 0.3s ease',
+                    boxShadow: isListening ? '0 0 10px var(--expense-color)' : 'none'
+                  }}
+                >
+                  {isListening ? '🛑' : '🎤'}
+                </button>
+              </div>
+              <textarea 
+                value={magicInput} 
+                onChange={(e) => setMagicInput(e.target.value)} 
+                placeholder={isListening ? "Listening..." : "e.g. Spent 500 on coffee today morning at Starbucks"} 
+                rows={3}
+                required 
+              />
+              <p className="hint">Try: "Received 50000 salary yesterday" or "Movie at PVR for 800 last Sunday"</p>
+            </div>
+            <button className="btn magic-btn" disabled={isParsing || isListening}>
+              {isParsing ? 'AI is thinking...' : '✨ Add with AI'}
+            </button>
+          </motion.form>
         ) : (
           <motion.form 
             key="form"
