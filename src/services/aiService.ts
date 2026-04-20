@@ -3,13 +3,15 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
-// Using JSON Mode to force valid JSON output
-const model = genAI ? genAI.getGenerativeModel({ 
-  model: "gemini-2.5-flash-lite",
-  generationConfig: {
-    responseMimeType: "application/json",
-  }
-}) : null;
+const getModel = () => {
+  if (!genAI) return null;
+  return genAI.getGenerativeModel({ 
+    model: "gemini-2.5-flash-lite",
+    generationConfig: {
+      responseMimeType: "application/json",
+    }
+  });
+};
 
 export interface ParsedTransaction {
   text: string;
@@ -23,8 +25,15 @@ export interface ParsedTransaction {
 export const parseNaturalLanguageTransaction = async (
   input: string, 
   categories: string[]
-): Promise<ParsedTransaction | null> => {
-  if (!API_KEY || !model) return null;
+): Promise<ParsedTransaction> => {
+  if (!API_KEY) {
+    throw new Error("API Key is missing from the build. Check GitHub Secrets.");
+  }
+  
+  const model = getModel();
+  if (!model) {
+    throw new Error("AI Model failed to initialize. Check if your API Key is valid.");
+  }
 
   const today = new Date().toISOString().split('T')[0];
   const prompt = `
@@ -34,7 +43,7 @@ export const parseNaturalLanguageTransaction = async (
     
     Return a JSON object matching this schema:
     {
-      "text": string (short description),
+      "text": string,
       "amount": number,
       "category": string (MUST be one of the Valid Categories),
       "date": "YYYY-MM-DD",
@@ -51,15 +60,19 @@ export const parseNaturalLanguageTransaction = async (
     try {
       return JSON.parse(text) as ParsedTransaction;
     } catch (parseErr) {
-      console.error("JSON Parse Error on AI response:", text, parseErr);
-      return null;
+      throw new Error(`AI returned invalid JSON: ${text.substring(0, 100)}...`);
     }
   } catch (error: any) {
-    console.error("Error parsing transaction with AI:", error);
-    if (error.message?.includes('quota')) {
-      alert("AI Quota exceeded. Please wait a minute and try again.");
+    console.error("Gemini API Error:", error);
+    // Extract specific error messages from the Gemini SDK error
+    const message = error.message || "Unknown AI error";
+    if (message.includes('403')) {
+      throw new Error("AI Access Denied (403). Check if your API Key has Referrer Restrictions blocking this domain.");
     }
-    return null;
+    if (message.includes('429')) {
+      throw new Error("AI Quota Exceeded (429). Please wait a minute.");
+    }
+    throw new Error(message);
   }
 };
 
@@ -70,7 +83,6 @@ export const getFinancialInsights = async (
 ): Promise<string> => {
   if (!API_KEY || !genAI) return "Set your VITE_GEMINI_API_KEY to get AI insights.";
 
-  // Insights don't need JSON mode
   const insightModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
 
   const prompt = `
@@ -79,7 +91,7 @@ export const getFinancialInsights = async (
     Recent Transactions: ${JSON.stringify(transactions.slice(-10))}
     Savings Goals: ${JSON.stringify(buckets)}
     
-    Act as a supportive financial coach. Highlight a trend or suggest a small win.
+    Act as a supportive financial coach.
   `;
 
   try {
@@ -88,6 +100,6 @@ export const getFinancialInsights = async (
     return response.text();
   } catch (error) {
     console.error("Error getting insights:", error);
-    return "Keep up the great work on your financial journey!";
+    return "Keep up the great work!";
   }
 };
