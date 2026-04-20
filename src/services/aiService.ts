@@ -21,25 +21,32 @@ export const parseNaturalLanguageTransaction = async (
 
   const today = new Date().toISOString().split('T')[0];
   const prompt = `
-    Extract transaction details from the following text: "${input}"
-    
-    Current available categories: ${categories.join(', ')}
-    Current date today: ${today}
+    Task: Extract transaction details from the user input.
+    Input: "${input}"
+    Current Date: ${today}
+    Valid Categories: ${categories.join(', ')}
     
     Rules:
-    1. If the year isn't specified, assume it's the current year.
-    2. If the category doesn't match exactly, pick the closest one from the list.
-    3. If it's unclear if it's income or expense, assume 'expense' unless keywords like 'received', 'salary', 'earned' are present.
-    4. Return ONLY a valid JSON object.
+    1. Output MUST be a single valid JSON object.
+    2. Category MUST be one of the "Valid Categories" listed above. If none match perfectly, choose the most logical fit.
+    3. Amount MUST be a number.
+    4. Type MUST be "income" or "expense".
+    5. Date MUST be in YYYY-MM-DD format.
+    6. If input is vague about year, use ${today.split('-')[0]}.
     
-    Response format:
+    Examples:
+    - "500 for lunch" -> {"text": "Lunch", "amount": 500, "category": "Food", "date": "${today}", "type": "expense", "note": ""}
+    - "Received 50000 salary" -> {"text": "Salary", "amount": 50000, "category": "Salary", "date": "${today}", "type": "income", "note": ""}
+    - "800 on movie yesterday" -> {"text": "Movie", "amount": 800, "category": "Entertainment", "date": "yesterday's date", "type": "expense", "note": ""}
+    
+    Response Format (JSON ONLY):
     {
-      "text": "Short description",
+      "text": "string",
       "amount": number,
-      "category": "One from the list",
+      "category": "string",
       "date": "YYYY-MM-DD",
       "type": "income" | "expense",
-      "note": "Any extra details"
+      "note": "string"
     }
   `;
 
