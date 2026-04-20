@@ -95,6 +95,7 @@ export const FinancialWellness = () => {
 
   // Fetch AI Insight
   const fetchInsight = async () => {
+    if (transactions.length === 0) return;
     setIsLoadingInsight(true);
     const result = await getFinancialInsights(transactions, buckets, healthScore);
     setInsight(result);
@@ -102,10 +103,11 @@ export const FinancialWellness = () => {
   };
 
   useEffect(() => {
-    if (transactions.length > 0) {
+    // Only fetch automatically on mount if we don't have an insight yet
+    if (transactions.length > 0 && !insight) {
       fetchInsight();
     }
-  }, [healthScore]);
+  }, []); // Run once on mount
 
   const handleAddBucket = (e: React.FormEvent) => {
     e.preventDefault();
