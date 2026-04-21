@@ -39,13 +39,14 @@ export const SpendDistribution = () => {
 
     const currentMonthTransactions = relevantTransactions.filter(t => {
       const dateStr = t.paidDate || t.dueDate;
-      const [y, m] = dateStr.split('-').map(Number);
-      return (m - 1) === currentMonth && y === currentYear;
+      const date = new Date(dateStr);
+      return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
     });
 
     currentMonthTransactions.forEach((t: Transaction) => {
       const amount = t.type === 'expense' ? t.amount : -t.amount;
-      currentMonthNet[t.category] = (currentMonthNet[t.category] || 0) + amount;
+      const cat = t.category.trim();
+      currentMonthNet[cat] = (currentMonthNet[cat] || 0) + amount;
     });
 
     // Only consider categories with net positive expense for the "Spend" distribution
@@ -64,13 +65,14 @@ export const SpendDistribution = () => {
 
     const historicalTransactions = relevantTransactions.filter(t => {
       const dateStr = t.paidDate || t.dueDate;
-      const [y, m] = dateStr.split('-').map(Number);
-      return prevMonths.some(pm => pm.m === (m - 1) && pm.y === y);
+      const date = new Date(dateStr);
+      return prevMonths.some(pm => pm.m === date.getMonth() && pm.y === date.getFullYear());
     });
 
     historicalTransactions.forEach((t: Transaction) => {
       const amount = t.type === 'expense' ? t.amount : -t.amount;
-      rollingNet[t.category] = (rollingNet[t.category] || 0) + amount;
+      const cat = t.category.trim();
+      rollingNet[cat] = (rollingNet[cat] || 0) + amount;
     });
 
     const summaries: CategorySummary[] = [];
@@ -158,7 +160,7 @@ export const SpendDistribution = () => {
   const selectedTransactions = useMemo(() => {
     if (!selectedCategory) return [];
     return categoryData.currentMonthTransactions.filter(
-      (t: Transaction) => t.category === selectedCategory
+      (t: Transaction) => t.category.trim() === selectedCategory
     );
   }, [selectedCategory, categoryData]);
 
