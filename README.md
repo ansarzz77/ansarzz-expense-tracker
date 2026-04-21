@@ -72,3 +72,4 @@ export default defineConfig([
 ])
 ```
 # ansarzz-expense-tracker
+echo "\n--- \nLast Update: $(date)"
