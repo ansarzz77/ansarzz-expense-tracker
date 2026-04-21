@@ -6,7 +6,7 @@ const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 const getModel = () => {
   if (!genAI) return null;
   return genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash-lite",
+    model: "gemini-1.5-flash",
     generationConfig: {
       responseMimeType: "application/json",
     }
@@ -63,11 +63,17 @@ export const parseNaturalLanguageTransaction = async (
       throw new Error(`AI returned invalid JSON: ${text.substring(0, 100)}...`);
     }
   } catch (error: any) {
-    console.error("Gemini API Error:", error);
-    // Extract specific error messages from the Gemini SDK error
+    console.error("Gemini API Error details:", error);
     const message = error.message || "Unknown AI error";
+    
+    if (message.includes('Failed to fetch')) {
+      throw new Error("AI Network Error (Failed to fetch). This could be due to an invalid model name, an incorrect API key, or your browser/network blocking the request (CORS/Adblocker).");
+    }
     if (message.includes('403')) {
-      throw new Error("AI Access Denied (403). Check if your API Key has Referrer Restrictions blocking this domain.");
+      throw new Error("AI Access Denied (403). Check if your API Key has Referrer Restrictions blocking this domain or if the model name is incorrect.");
+    }
+    if (message.includes('404')) {
+      throw new Error("AI Model Not Found (404). The model name might be incorrect or discontinued.");
     }
     if (message.includes('429')) {
       throw new Error("AI Quota Exceeded (429). Please wait a minute.");
@@ -83,7 +89,7 @@ export const getFinancialInsights = async (
 ): Promise<string> => {
   if (!API_KEY || !genAI) return "Set your VITE_GEMINI_API_KEY to get AI insights.";
 
-  const insightModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
+  const insightModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `
     Analyze these finances and give one concise, friendly piece of advice (max 2 sentences).
