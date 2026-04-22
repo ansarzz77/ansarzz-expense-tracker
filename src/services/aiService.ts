@@ -6,7 +6,7 @@ const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 const getModel = () => {
   if (!genAI) return null;
   return genAI.getGenerativeModel({ 
-    model: "gemini-2.5-flash",
+    model: "gemini-1.5-flash",
     generationConfig: {
       responseMimeType: "application/json",
     }
@@ -89,7 +89,7 @@ export const getFinancialInsights = async (
 ): Promise<string> => {
   if (!API_KEY || !genAI) return "Set your VITE_GEMINI_API_KEY to get AI insights.";
 
-  const insightModel = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+  const insightModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `
     Analyze these finances and give one concise, friendly piece of advice (max 2 sentences).
