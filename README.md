@@ -1,75 +1,25 @@
-# React + TypeScript + Vite
+# 🚀 Ansarzz Expense Tracker: Full-Stack AI Implementation
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A professional, high-performance expense tracking application built with a modular, decoupled architecture.
 
-Currently, two official plugins are available:
+## 🏗️ The Professional Stack
+*   **🎨 Frontend:** React 19 (TypeScript) + Vite, hosted on **GitHub Pages**.
+*   **🧠 Backend:** Modular Node.js (Express), hosted on **Render.com**.
+*   **☁️ Database/Sync:** Supabase (PostgreSQL), with real-time browser-to-cloud sync.
+*   **🤖 AI Engine:** Google Gemini AI Integration for natural language transaction parsing.
+*   **🚢 CI/CD:** GitHub Actions for automated building and secure secret injection.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🧱 Modular Architecture
+The application is designed for scalability and security:
+*   **Secure API Layer:** AI requests are handled by a dedicated Express backend, keeping sensitive API keys hidden from the client side.
+*   **Concurrently Driven Dev:** Local development runs both the frontend and backend with a single `npm run dev` command.
+*   **Vite Proxying:** Dev server uses a proxy to route `/api` requests to the backend, preventing CORS and connection issues.
+*   **Absolute Env Loading:** Backend uses robust, path-based environment loading to ensure stability across different deployment environments.
 
-## React Compiler
+## 🛠️ Development & Deployment
+*   **Dev:** `npm run dev` (Frontend on port 5173, Backend on port 3001).
+*   **Prod Frontend:** GitHub Pages (via GitHub Actions).
+*   **Prod Backend:** Render.com (via GitHub connect).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
-# ansarzz-expense-tracker
-echo "\n--- \nLast Update: $(date)"
+---
+*Maintained by Ansarzz.*

@@ -9,11 +9,39 @@ The application is built using a modern, performant, and type-safe stack:
 *   **Build Tool:** Vite for lightning-fast development and optimized production builds.
 *   **Utilities:** `PapaParse` for robust CSV processing and custom SVG logic for data visualization.
 
+## 2. 🏗️ Architecture & Full-Stack Layout
+
+The application follows a modern **Decoupled Full-Stack Architecture**, ensuring high security, scalability, and a professional developer workflow.
+
+### A. The Big Picture
+```mermaid
+graph LR
+    User([User Browser]) -->|HTTPS| GH[GitHub Pages Frontend]
+    GH -->|REST API| R[Render.com Backend]
+    R -->|Secure SDK| G[Gemini AI Engine]
+    GH -->|Real-time Sync| S[Supabase Database]
+```
+
+### B. Frontend Layer (The UI)
+*   **Hosting:** GitHub Pages.
+*   **Environment Logic:** Uses a "Baked-in" `VITE_BACKEND_URL` during the GitHub Actions build process to route requests to the production API.
+*   **Security:** Zero exposure of AI API keys. The frontend only communicates with its own trusted backend.
+
+### C. Backend Layer (The Brain)
+*   **Hosting:** Render.com (Node.js/Express).
+*   **Structure:**
+    *   `config/`: Manages AI model initialization and environment variables.
+    *   `controllers/`: Contains the core business logic for parsing transactions and generating insights.
+    *   `routes/`: Defines clean RESTful endpoints for the frontend to consume.
+*   **AI Integration:** Leverages the **Gemini 2.5 Flash** model for high-speed, natural language financial processing.
+
+### D. CI/CD & Dev Workflow
+*   **Local Dev:** A unified `npm run dev` command uses **Concurrently** to spin up both the Vite dev server and the Express backend, with a Vite proxy handling seamless request routing.
+*   **Automated Deployment:** GitHub Actions automatically builds the React app and injects production secrets, ensuring the live site is always in sync with the `main` branch.
+
 ---
 
-## 2. 🧠 Core Logic & Architecture
-
-### A. The "Net Spend" Aggregation Logic
+## 3. 🧠 Core Logic & Features
 The app uses a sophisticated calculation for the **Spend Distribution** chart to ensure financial accuracy:
 *   **Formula:** `Category Net Spend = Σ(Expenses) - Σ(Income)`
 *   **Scenario:** If you categorize a ₹20,000 "Loan Given" as an expense and a ₹10,000 "Repayment" as income within the *same* category, the app reflects a net spend of ₹10,000.
