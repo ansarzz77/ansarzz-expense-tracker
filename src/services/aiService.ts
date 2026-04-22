@@ -9,6 +9,11 @@ export interface ParsedTransaction {
 
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || '';
 
+// Debug log for production troubleshooting
+if (!import.meta.env.DEV) {
+  console.log("AI Service initialized. Backend URL:", BACKEND_URL || "Using relative path (Internal)");
+}
+
 export const parseNaturalLanguageTransaction = async (
   input: string, 
   categories: string[]
