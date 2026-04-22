@@ -9,6 +9,12 @@ export default defineConfig({
     watch: {
       ignored: ['**/.cache/**'],
     },
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [
     react(),
